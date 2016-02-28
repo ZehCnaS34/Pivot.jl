@@ -42,8 +42,11 @@ function getchild(tag, es::Vector{Endpoint})
 end
 
 """
-@params tag_list::
-Returns an endpoint
+The `crawl_node_chain` function takes an endpointNode and a tag list, and
+returns the last endpoint in the tag list. It returns nothing, if the endpoint
+does not exist
+
+  crawl_node_chain(StaticEndpoint(), ["users", ":id", "show"])
 """
 function crawl_node_chain(e::Endpoint, tag_list)
   isempty(tag_list) && return e
@@ -53,4 +56,4 @@ function crawl_node_chain(e::Endpoint, tag_list)
   end && return crawl_node_chain(getchild(token, e.children), tag_list)
 end
 
-crawl_node_chain(::Void, tag_list) = throw("Testing")
+crawl_node_chain(::Void, tag_list) = nothing
