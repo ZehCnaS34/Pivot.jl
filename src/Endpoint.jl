@@ -1,8 +1,10 @@
 
 import Base.in
 
+typealias Handler Function
 
 abstract Endpoint
+const ROOT_TAG = "__pivot__"
 
 # returns 0 if the element does not exist in the array.
 # O[n]
@@ -17,18 +19,14 @@ end
 type StaticEndpoint <: Endpoint
   tag
   children::Vector{Endpoint}
-  handlermap::Map{Int16, Handler}
-  StaticEndpoint() = new("/", [])
+  handlermap::Dict{Int16, Handler}
+  StaticEndpoint() = new(ROOT_TAG, [], Dict())
+  StaticEndpoint(name) = new(name, [], Dict())
 end
 
-function Base.in(tag, es::Vector{Endpoint})
-  tags = map((t) -> t.tag ,es)
-  in(tag, tags)
-end
-
-function Base.in(fn, val, es::Vector{Endpoint})
-  for ep in es
-    val == fn(ep) && return true
+function Base.in(tag, ep::Endpoint)
+  for c in ep.children
+    tag == c.tag && return true
   end
   return false
 end
@@ -54,6 +52,15 @@ function crawl_node_chain(e::Endpoint, tag_list)
   in(token, e.children) do ep
     ep.tag
   end && return crawl_node_chain(getchild(token, e.children), tag_list)
+end
+
+function create_tree_from_token_chain(ep, taglist)
+  isempty(taglist) && return ep
+  tag = shift!(taglist)
+  in(tag, ep) && return create_tree_from_token_chain(getchild(tag, ep), taglist)
+  child = StaticEndpoint(tag)
+  push!(ep.children, child)
+  return create_tree_from_token_chain(child, taglist)
 end
 
 crawl_node_chain(::Void, tag_list) = nothing
