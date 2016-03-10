@@ -16,6 +16,9 @@ function indexof(elt, list)
   return 0
 end
 
+"""
+StaticEndpoint
+"""
 type StaticEndpoint <: Endpoint
   tag
   children::Vector{Endpoint}
@@ -54,6 +57,10 @@ function crawl_node_chain(e::Endpoint, tag_list)
   end && return crawl_node_chain(getchild(token, e.children), tag_list)
 end
 
+"""
+Returns the leaf node for the last token in the taglist
+if there is no link to the leaf node, It will be generated.
+"""
 function create_tree_from_token_chain(ep, taglist)
   isempty(taglist) && return ep
   tag = shift!(taglist)
