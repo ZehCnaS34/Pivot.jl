@@ -1,19 +1,22 @@
-
+# importing
+import Base.repr
 import Base.in
+import Base.(==)
+import Base.(<)
+import Base.(>)
+import Base.isless
+import Base.getindex
+import Base.push!
 
 typealias Handler Function
 
+# The children should be sorted with static endpoints first
 abstract Endpoint
+
 const ROOT_TAG = "__pivot__"
 
-# returns 0 if the element does not exist in the array.
-# O[n]
-function indexof(elt, list)
-  for i in list
-    list[i] == elt && return i
-  end
-
-  return 0
+function repr(e::Endpoint)
+  "$(e.tag)(" * join(map(repr, e.children), ",") * ")"
 end
 
 """
@@ -22,52 +25,89 @@ StaticEndpoint
 type StaticEndpoint <: Endpoint
   tag
   children::Vector{Endpoint}
-  handlermap::Dict{Int16, Handler}
+  handlermap::Dict{Verb, Handler}
   StaticEndpoint() = new(ROOT_TAG, [], Dict())
   StaticEndpoint(name) = new(name, [], Dict())
 end
 
-function Base.in(tag, ep::Endpoint)
-  for c in ep.children
-    tag == c.tag && return true
+type DynamicEndpoint <: Endpoint
+  tag
+  captured
+  children::Vector{Endpoint}
+  handlermap::Dict{Verb, Handler}
+  DynamicEndpoint(name) = new(name, nothing, [], Dict())
+end
+
+# @ord (
+#   StaticEndpoint,
+#   DynamicEndpoint
+# )
+
+(==)(tag::AbstractString, ep::StaticEndpoint) = tag == ep.tag
+(==)(ep::StaticEndpoint, tag::AbstractString) = tag == ep.tag
+(==)(tag::AbstractString, ep::DynamicEndpoint) = (ep.captured = tag; true)
+(==)(ep::DynamicEndpoint, tag::AbstractString) = (ep.captured = tag; true)
+
+isless(::StaticEndpoint, ::DynamicEndpoint) = true
+isless(::DynamicEndpoint, ::StaticEndpoint) = false
+isless(::StaticEndpoint, ::StaticEndpoint) = false
+isless(::DynamicEndpoint, ::DynamicEndpoint) = false
+# (>)(::StaticEndpoint, ::DynamicEndpoint) = false
+# (>)(::DynamicEndpoint, ::StaticEndpoint) = true
+
+"""
+check if the tag is named
+"""
+Base.in(tag::AbstractString, ep::Endpoint) = in(tag, ep.children)
+
+function getindex(ep::Endpoint, tag::AbstractString)
+  for cep in ep.children
+    cep == tag && return cep
   end
-  return false
+
+  error("no endpoint named $tag.")
 end
 
-function getchild(tag, es::Vector{Endpoint})
-  for ep in es
-    tag == ep.tag && return ep
+"""
+getindex returns the child endpoint of the parent endpoint that
+matches the string
+"""
+function getindex(ep::Endpoint, tags::Vector)
+  isempty(tags) && return ep
+  leaf = ep[shift!(tags)]
+  while !isempty(tags)
+    leaf = leaf[shift!(tags)]
   end
-
-  nothing
+  leaf
 end
 
-"""
-The `crawl_node_chain` function takes an endpointNode and a tag list, and
-returns the last endpoint in the tag list. It returns nothing, if the endpoint
-does not exist
-
-  crawl_node_chain(StaticEndpoint(), ["users", ":id", "show"])
-"""
-function crawl_node_chain(e::Endpoint, tag_list)
-  isempty(tag_list) && return e
-  token = pop!(tag_list)
-  in(token, e.children) do ep
-    ep.tag
-  end && return crawl_node_chain(getchild(token, e.children), tag_list)
+function push!(ep::Endpoint, o::Endpoint)
+  push!(ep.children, o)
+  sort!(ep.children)
 end
 
-"""
-Returns the leaf node for the last token in the taglist
-if there is no link to the leaf node, It will be generated.
-"""
-function create_tree_from_token_chain(ep, taglist)
-  isempty(taglist) && return ep
-  tag = shift!(taglist)
-  in(tag, ep) && return create_tree_from_token_chain(getchild(tag, ep), taglist)
-  child = StaticEndpoint(tag)
-  push!(ep.children, child)
-  return create_tree_from_token_chain(child, taglist)
+function push!(ep::Endpoint, tag::AbstractString;
+              dynamic_prefix=':')
+  if !in(tag,ep)
+    if startswith(tag, dynamic_prefix)
+      push!(ep, DynamicEndpoint(tag))
+    else
+      push!(ep, StaticEndpoint(tag))
+    end
+  end
+  ep[tag]
 end
 
-crawl_node_chain(::Void, tag_list) = nothing
+function push!(ep::Endpoint, taglist::Vector)
+  while !isempty(taglist)
+    tag = shift!(taglist)
+    ep = push!(ep, tag)
+  end
+  ep
+end
+
+function buildtree(taglist::Vector; dynamic_identifer=':')
+  root = StaticEndpoint()
+  push!(root, taglist)
+  return root
+end
