@@ -30,6 +30,10 @@ type StaticEndpoint <: Endpoint
   StaticEndpoint(name) = new(name, [], Dict())
 end
 
+"""
+DynamicEndpoint
+matches any string and captures what it compares during a comparison check.
+"""
 type DynamicEndpoint <: Endpoint
   tag
   captured
@@ -48,6 +52,9 @@ end
 (==)(tag::AbstractString, ep::DynamicEndpoint) = (ep.captured = tag; true)
 (==)(ep::DynamicEndpoint, tag::AbstractString) = (ep.captured = tag; true)
 
+"""
+static endpoint should be less that a dynamic endpoint.
+"""
 isless(::StaticEndpoint, ::DynamicEndpoint) = true
 isless(::DynamicEndpoint, ::StaticEndpoint) = false
 isless(::StaticEndpoint, ::StaticEndpoint) = false
@@ -60,6 +67,10 @@ check if the tag is named
 """
 Base.in(tag::AbstractString, ep::Endpoint) = in(tag, ep.children)
 
+"""
+getindex
+returns the child with the specified tag name.
+"""
 function getindex(ep::Endpoint, tag::AbstractString)
   for cep in ep.children
     cep == tag && return cep
@@ -67,6 +78,21 @@ function getindex(ep::Endpoint, tag::AbstractString)
 
   error("no endpoint named $tag.")
 end
+
+
+"""
+endpointproducer
+"""
+function endpointproducer(ep::Endpoint, tags::Vector)
+  while !isempty(tags)
+    tag = shift!(tags)
+    produce(ep[tag])
+    ep = ep[tag]
+  end
+end
+
+endpointconsumer(ep::Endpoint,
+                 tags::Vector) = Task(() -> endpointproducer(ep, tags))
 
 """
 getindex returns the child endpoint of the parent endpoint that
@@ -84,10 +110,17 @@ end
 function push!(ep::Endpoint, o::Endpoint)
   push!(ep.children, o)
   sort!(ep.children)
+  o
 end
 
+
+"""
+push!
+converts the tag into an endpoint, then pushes it the the chileren
+of ep.
+"""
 function push!(ep::Endpoint, tag::AbstractString;
-              dynamic_prefix=':')
+               dynamic_prefix=':')
   if !in(tag,ep)
     if startswith(tag, dynamic_prefix)
       push!(ep, DynamicEndpoint(tag))
@@ -98,6 +131,7 @@ function push!(ep::Endpoint, tag::AbstractString;
   ep[tag]
 end
 
+# pushes every token to the taglist
 function push!(ep::Endpoint, taglist::Vector)
   while !isempty(taglist)
     tag = shift!(taglist)
@@ -106,8 +140,7 @@ function push!(ep::Endpoint, taglist::Vector)
   ep
 end
 
-function buildtree(taglist::Vector; dynamic_identifer=':')
-  root = StaticEndpoint()
+function buildtree(taglist::Vector; dynamic_identifer=':', root= StaticEndpoint())
   push!(root, taglist)
   return root
 end

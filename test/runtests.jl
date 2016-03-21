@@ -11,12 +11,4 @@ using Base.Test
 @test GET + POST == GET | POST == 5
 
 root = StaticEndpoint()
-
-@test Pivot.create_tree_from_token_chain(root, []) == root
-
-home_endpoint = StaticEndpoint("home")
-rootc = deepcopy(root)
-push!(rootc.children, home_endpoint)
-
-@test Pivot.create_tree_from_token_chain(root, ["home"]) == home_endpoint
-@test rootc != root
+@test Pivot.buildtree([]).tag == root.tag
