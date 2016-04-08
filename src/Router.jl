@@ -1,6 +1,3 @@
-
-
-
 """
   Router is the root of the tree
 """
@@ -15,6 +12,12 @@ parseurl(str) = filter(split(str, '/')) do str
     str != ""
 end
 
+
+macro field(typ, attr)
+    typeof(typ) != Symbol && error("First argument must be a symbol")
+    Expr(:., (esc(typ)), :($attr))
+end
+
 """
   not working
 """
@@ -22,29 +25,19 @@ todict(t) = (sym::Symbol) -> (Expr(:., :r, :($sym)))
 
 """
     todict converts any type passed and returns a dict
-    """
-function todict(t)
-    fields = fieldnames(t)
+"""
+function todict(typ)
     output = Dict()
-    value = getfield(t)
-    for field in fields
-        output[field] = value
+    for field in fieldnames(typ)
+        output[field] = @field typ field
     end
-
     output
 end
 
 todict(t...) = map(todict, t...)
 
-function handle!(fn::Handler,
-                 method::Verb,
-                 ep::Endpoint)
-    ep.handlermap[method] = fn
-end
-
-
 """
-Mount
+# Mount
 takes one routing tree `r2` and attaches it to another routing tree `r1`
 the mount will applied according to the specified path `to`
 
@@ -52,9 +45,22 @@ return returns the leaf node
 """
 function mount!(r1::Router, r2::Router; to="/")
     root = buildtree(to; root=StaticEndpoint("/"))
-    parent = r1[parseurl(to)]
     tokens = parseurl(to)
+    parent = r1[tokens]
     push!(r1.root, tokens)
+end
+
+
+"""
+# handle!
+
+attaches the handler::Function to the handlemap contained on the leaf endpoint
+of the path.
+"""
+function handle!(fn::Handler,
+                 method::Verb,
+                 ep::Endpoint)
+    ep.handlermap[method] = fn
 end
 
 function handle!(fn::Handler, method::Verb, router::Router, path::Vector)
@@ -71,9 +77,14 @@ handle!(fn::Handler,
         router::Router,
         path::AbstractString) = handle!(fn, method, router, parseurl(path))
 
+function handle(fn::Handler, method::Verb, path::AbstractString)
+    function (r::Router)
+        handle!(fn, method, r, path)
+    end
+end
+
 Router() = Router(StaticEndpoint())
 
-
 function fetch(r::Router, tokens::Vector)
-
+    r.root[tokens]
 end

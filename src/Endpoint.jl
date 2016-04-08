@@ -8,6 +8,7 @@ import Base.isless
 import Base.getindex
 import Base.push!
 
+# Something to 
 typealias Handler Function
 
 # The children should be sorted with static endpoints first
@@ -15,6 +16,7 @@ abstract Endpoint
 
 const ROOT_TAG = "__pivot__"
 
+# For debugging. Makes endpoints a little nicer looking in the terminal.
 function repr(e::Endpoint)
   "$(e.tag)(" * join(map(repr, e.children), ",") * ")"
 end
