@@ -12,16 +12,16 @@ parseurl(str) = filter(split(str, '/')) do str
     str != ""
 end
 
-
+"""
+"""
 macro field(typ, attr)
     typeof(typ) != Symbol && error("First argument must be a symbol")
-    Expr(:., (esc(typ)), :($attr))
+    if typeof(attr) == Symbol
+        Expr(:., (esc(typ)), :($attr))
+    else
+        Expr(:., (esc(typ)), :($(esc(attr))))
+    end
 end
-
-"""
-  not working
-"""
-todict(t) = (sym::Symbol) -> (Expr(:., :r, :($sym)))
 
 """
     todict converts any type passed and returns a dict
@@ -34,7 +34,7 @@ function todict(typ)
     output
 end
 
-todict(t...) = map(todict, t...)
+todict(t...) = map(todict, t)
 
 """
 # Mount
