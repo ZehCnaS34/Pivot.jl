@@ -15,3 +15,17 @@ const STI = Dict(
   "DELETE" =>  DELETE,
   "PATCH"  =>  PATCH
 )
+
+"""
+for cases when an endpoint can many different verbs
+"""
+function proper_method(verb, map)
+  in(verb, map |> keys) && return map[verb]
+
+
+  for v in keys(map)
+    verb & v > 0 && return map[v]
+  end
+
+  return nothing
+end

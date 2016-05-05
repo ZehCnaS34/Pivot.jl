@@ -28,7 +28,9 @@ function run(e::Engine, port::Number=8080)
     req |> rmux(e.middleware) do rq
       # need to figure out a way to have scoped middleware
       endpoint = fetch(e.root, rq[:path])
-      e.root.middleware(endpoint.handlermap[STI[rq[:method]]], Dict(
+      verb = STI[rq[:method]]
+
+      e.root.middleware(proper_method(verb, endpoint.handlermap), Dict(
         :request => rq,
         :endpoint => endpoint
       ))
