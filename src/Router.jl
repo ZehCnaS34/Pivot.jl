@@ -3,7 +3,7 @@
 """
 type Router
     root::Endpoint
-    mw::Function
+    middleware::Function
 end
 
 """
@@ -82,7 +82,7 @@ handle!(fn::Handler,
 
 
 function use!(router::Router, fn::Function)
-  router.mw = stack(router.mw, fn)
+  router.middleware = stack(router.middleware, fn)
 end
 
 use!(fn::Function, r::Router) = use!(r, fn)
