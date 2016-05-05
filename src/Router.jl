@@ -8,11 +8,11 @@ end
 """
   parseurl should change
 """
-parseurl(str) = filter(split(str, '/')) do str
-    str != ""
-end
+parseurl(str) = filter((s) -> s != "", split(str, '/'))
 
 """
+A helper macro I made to make it easier to convert Request and Response
+types to dictionaries
 """
 macro field(typ, attr)
     typeof(typ) != Symbol && error("First argument must be a symbol")

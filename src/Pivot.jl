@@ -3,16 +3,16 @@ using Mux
 using HttpServer
 
 export Endpoint,
-StaticEndpoint,
-DynamicEndpoint,
-Router,
-handle!,
-match,
-GET,
-PUT,
-POST,
-DELETE,
-PATCH
+  StaticEndpoint,
+  DynamicEndpoint,
+  Router,
+  handle!,
+  match,
+  GET,
+  PUT,
+  POST,
+  DELETE,
+  PATCH
 
 # package code goes here
 include("verbs.jl")

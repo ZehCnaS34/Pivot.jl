@@ -61,8 +61,6 @@ isless(::StaticEndpoint, ::DynamicEndpoint) = true
 isless(::DynamicEndpoint, ::StaticEndpoint) = false
 isless(::StaticEndpoint, ::StaticEndpoint) = false
 isless(::DynamicEndpoint, ::DynamicEndpoint) = false
-# (>)(::StaticEndpoint, ::DynamicEndpoint) = false
-# (>)(::DynamicEndpoint, ::StaticEndpoint) = true
 
 """
 check if the tag is named
