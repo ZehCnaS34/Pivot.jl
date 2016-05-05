@@ -93,7 +93,7 @@ endpointconsumer(ep::Endpoint,
 getindex returns the child endpoint of the parent endpoint that
 matches the string
 """
-function getindex(ep::Endpoint, tags::Vector)
+function getindex(ep::Endpoint, tags::Vector; eqfn=(a,b) -> true)
   isempty(tags) && return ep
   leaf = ep[shift!(tags)]
   while !isempty(tags)
@@ -116,6 +116,9 @@ of ep.
 """
 function push!(ep::Endpoint, tag::AbstractString;
                dynamic_prefix=':')
+
+
+
   if !in(tag,ep)
     if startswith(tag, dynamic_prefix)
       push!(ep, DynamicEndpoint(tag))
