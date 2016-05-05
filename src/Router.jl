@@ -93,5 +93,3 @@ Router() = Router(StaticEndpoint(), (app, req) -> app(req))
 function fetch(r::Router, tokens::Vector)
     r.root[tokens]
 end
-
-Router()

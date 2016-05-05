@@ -24,7 +24,7 @@ type Engine
 end
 
 # Engine() = Engine(Pivot.Router(), stack(dim, Mux.splitquery))
-Engine() = Engine(Pivot.Router(), Mux.defaults)
+Engine() = Engine(Pivot.Router(), stack(Mux.defaults))
 
 handle!(fn::Handler,
         method::Verb,
@@ -42,7 +42,10 @@ function run(e::Engine, port::Number=8080)
     req |> rmux(e.middleware) do rq
       # need to figure out a way to have scoped middleware
       endpoint = fetch(e.root, rq[:path])
-      e.root.mw(endpoint.handlermap[STI[rq[:method]]], rq)
+      e.root.mw(endpoint.handlermap[STI[rq[:method]]], Dict(
+        :request => rq,
+        :endpoint => endpoint
+      ))
     end
   end
 
