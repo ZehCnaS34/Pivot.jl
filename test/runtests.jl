@@ -12,3 +12,9 @@ using Base.Test
 
 root = StaticEndpoint()
 @test Pivot.buildtree([]).tag == root.tag
+
+# learning
+@action index(conn) begin
+    @import name age
+    @> conn render("index.html")
+end

@@ -8,7 +8,7 @@ import Base.isless
 import Base.getindex
 import Base.push!
 
-# Something to 
+# just a little type alias
 typealias Handler Function
 
 # The children should be sorted with static endpoints first
@@ -78,7 +78,7 @@ function getindex(ep::Endpoint, tag::AbstractString)
     cep == tag && return cep
   end
 
-  error("no endpoint named $tag.")
+  error("No endpoint named $tag.")
 end
 
 
