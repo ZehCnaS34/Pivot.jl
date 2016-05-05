@@ -44,11 +44,6 @@ type DynamicEndpoint <: Endpoint
   DynamicEndpoint(name) = new(name, nothing, [], Dict())
 end
 
-# @ord (
-#   StaticEndpoint,
-#   DynamicEndpoint
-# )
-
 (==)(tag::AbstractString, ep::StaticEndpoint) = tag == ep.tag
 (==)(ep::StaticEndpoint, tag::AbstractString) = tag == ep.tag
 (==)(tag::AbstractString, ep::DynamicEndpoint) = (ep.captured = tag; true)
