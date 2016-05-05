@@ -70,8 +70,7 @@ end
 function handle!(fn::Handler, method::Verb, router::Router, path::Vector)
     endpoint = router.root
     if !isempty(path)
-        push!(router.root, path)
-        endpoint = router.root[path]
+        endpoint = push!(endpoint, path)
     end
     handle!(fn, method, endpoint)
 end
@@ -81,13 +80,15 @@ handle!(fn::Handler,
         router::Router,
         path::AbstractString) = handle!(fn, method, router, parseurl(path))
 
-function handle(fn::Handler, method::Verb, path::AbstractString)
-    function (r::Router)
-        handle!(fn, method, r, path)
-    end
+
+function use!(router::Router, fn::Function)
+  router.mw = stack(router.mw, fn)
 end
 
-Router() = Router(StaticEndpoint(), () -> ())
+use!(fn::Function, r::Router) = use!(r, fn)
+
+
+Router() = Router(StaticEndpoint(), (app, req) -> app(req))
 
 function fetch(r::Router, tokens::Vector)
     r.root[tokens]

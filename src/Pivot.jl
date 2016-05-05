@@ -4,11 +4,10 @@ using Mux
 using HttpServer
 
 export Endpoint,
-  StaticEndpoint,
-  DynamicEndpoint,
   Router,
   Engine,
   handle!,
+  use!,
   match,
   run,
   GET,
@@ -22,5 +21,6 @@ include("verbs.jl")
 include("Endpoint.jl")
 include("Router.jl")
 include("Engine.jl")
+include("middleware.jl")
 
 end # module
