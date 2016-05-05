@@ -3,10 +3,14 @@
 """
 type Router
     root::Endpoint
+    mw::Function
 end
 
 """
-  parseurl should change
+# parseurl
+
+should change
+This does not support params
 """
 parseurl(str) = filter((s) -> s != "", split(str, '/'))
 
@@ -83,8 +87,10 @@ function handle(fn::Handler, method::Verb, path::AbstractString)
     end
 end
 
-Router() = Router(StaticEndpoint())
+Router() = Router(StaticEndpoint(), () -> ())
 
 function fetch(r::Router, tokens::Vector)
     r.root[tokens]
 end
+
+Router()

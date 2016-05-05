@@ -1,4 +1,5 @@
 module Pivot
+__precompile__()
 using Mux
 using HttpServer
 
@@ -6,8 +7,10 @@ export Endpoint,
   StaticEndpoint,
   DynamicEndpoint,
   Router,
+  Engine,
   handle!,
   match,
+  run,
   GET,
   PUT,
   POST,
