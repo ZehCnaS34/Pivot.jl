@@ -4,7 +4,7 @@ app = Engine()
 
 use!(app, Pivot.Logger.simple)
 
-handle!(GET, app, "/") do ctx # might change this to context
+handle!(GET, app, "/") do ctx
   "This should not make anything precompile if it is modified."
 end
 

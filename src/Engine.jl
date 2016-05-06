@@ -24,10 +24,17 @@ use!(fn::Function, e::Engine) = use!(e.router, fn)
 # convenience.
 rmux(app, mw) = mux(mw, app)
 
+"""
+# finalize!
+
+just calls the finalize method that is provided by endpoint
+"""
+finalize!(e::Engine) = finalize!(e.router.root)
+
 function run(e::Engine, port::Number=8080)
+  Pivot.finalize!(e)
   http = HttpHandler() do req::Request, res::Response
     req |> rmux(e.middleware) do rq
-      # need to figure out a way to have scoped middleware
       endpoint = fetch(e.router, rq[:path])
       verb = STI[rq[:method]]
 

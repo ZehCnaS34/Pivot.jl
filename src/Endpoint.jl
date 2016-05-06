@@ -145,15 +145,16 @@ this function converts the static endpoint nodes into dynamic endpoint
 nodes.
 
 This must be called after all of the routing is defined
+# TODO: make iterative
 """
 function finalize!(root::Endpoint; dynamic_prefix=':')
-  if startswith(root.tag, dynamic_prefix)
+  if startswith(root.tag, dynamic_prefix) && typeof(root) == StaticEndpoint
     children = root.children
+    hm = root.handlermap
     root = DynamicEndpoint(root.tag)
     root.children = children
+    root.handlermap = hm
   end
-
-  isempty(root.children) &&  return nothing
-  map(finalize!, root.children)
-  nothing
+  root.children = map(finalize!, root.children)
+  return root
 end
