@@ -8,7 +8,7 @@ function simple(ap, ctx)
   s = time()
   output =  ap(ctx)
   f = time()
-  println("[$(ctx[:request][:method])  $(join(ctx[:request][:path], "/") * "/")] -- $(f - s)")
+  println("[$(ctx[:request][:method]) $(join(ctx[:request][:path], "/") * "/")] -- $(f - s)")
   output
 end
 

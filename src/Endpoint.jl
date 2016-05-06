@@ -74,21 +74,6 @@ function getindex(ep::Endpoint, tag::AbstractString)
   error("No endpoint named $tag.")
 end
 
-
-"""
-endpointproducer
-"""
-function endpointproducer(ep::Endpoint, tags::Vector)
-  while !isempty(tags)
-    tag = shift!(tags)
-    produce(ep[tag])
-    ep = ep[tag]
-  end
-end
-
-endpointconsumer(ep::Endpoint,
-                 tags::Vector) = Task(() -> endpointproducer(ep, tags))
-
 """
 getindex returns the child endpoint of the parent endpoint that
 matches the string
@@ -110,15 +95,13 @@ end
 
 
 """
-push!
+# push!
 converts the tag into an endpoint, then pushes it the the chileren
 of ep.
 """
 function push!(ep::Endpoint, tag::AbstractString;
-               dynamic_prefix=':')
-
-
-
+               dynamic_prefix=':', force_child=false)
+  
   if !in(tag,ep)
     if startswith(tag, dynamic_prefix)
       push!(ep, DynamicEndpoint(tag))
@@ -129,7 +112,12 @@ function push!(ep::Endpoint, tag::AbstractString;
   ep[tag]
 end
 
-# pushes every token to the taglist
+"""
+# push!
+
+Takes a taglist::Vector{AbstractString}, shifts them one-by-one and pushes
+the token onto the current endpoint, and returns
+"""
 function push!(ep::Endpoint, taglist::Vector)
   while !isempty(taglist)
     tag = shift!(taglist)
@@ -138,7 +126,13 @@ function push!(ep::Endpoint, taglist::Vector)
   ep
 end
 
-function buildtree(taglist::Vector; dynamic_identifer=':', root= StaticEndpoint())
+
+"""
+# buildtree
+
+builds a routing tree from a taglist
+"""
+function buildtree(taglist::Vector; dynamic_identifer=':', root=StaticEndpoint())
   push!(root, taglist)
   return root
 end

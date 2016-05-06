@@ -17,6 +17,4 @@ handle!(GET, app, "/timed") do ctx
   "This should take some time."
 end
 
-println(app.root.root)
-
 Pivot.run(app, 8080)
