@@ -100,15 +100,16 @@ converts the tag into an endpoint, then pushes it the the chileren
 of ep.
 """
 function push!(ep::Endpoint, tag::AbstractString;
-               dynamic_prefix=':', force_child=false)
-  
-  if !in(tag,ep)
-    if startswith(tag, dynamic_prefix)
-      push!(ep, DynamicEndpoint(tag))
-    else
-      push!(ep, StaticEndpoint(tag))
-    end
-  end
+               dynamic_prefix=':')
+  # only push as static
+  #=if !in(tag,ep)=#
+    #=if startswith(tag, dynamic_prefix)=#
+      #=push!(ep, DynamicEndpoint(tag))=#
+    #=else=#
+      #=push!(ep, StaticEndpoint(tag))=#
+    #=end=#
+  #=end=#
+  push!(ep, StaticEndpoint(tag))
   ep[tag]
 end
 
@@ -135,4 +136,24 @@ builds a routing tree from a taglist
 function buildtree(taglist::Vector; dynamic_identifer=':', root=StaticEndpoint())
   push!(root, taglist)
   return root
+end
+
+"""
+# finalize!
+
+this function converts the static endpoint nodes into dynamic endpoint
+nodes.
+
+This must be called after all of the routing is defined
+"""
+function finalize!(root::Endpoint; dynamic_prefix=':')
+  if startswith(root.tag, dynamic_prefix)
+    children = root.children
+    root = DynamicEndpoint(root.tag)
+    root.children = children
+  end
+
+  isempty(root.children) &&  return nothing
+  map(finalize!, root.children)
+  nothing
 end

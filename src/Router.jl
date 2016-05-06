@@ -1,3 +1,5 @@
+import Base.fetch
+
 """
   Router is the root of the tree
 """
