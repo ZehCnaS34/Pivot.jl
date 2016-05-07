@@ -31,9 +31,9 @@ end
 # public serve some static files?
 """
 function public(public_directory)
-  function (app, req)
+  function (app, ctx)
     resourcefile = joinpath(public_directory,
-      join(req[:path], "/")) |> abspath
+      join(ctx[:request][:path], "/")) |> abspath
 
     if isfile(resourcefile)
       f = open(resourcefile)
@@ -42,7 +42,7 @@ function public(public_directory)
       return content
     end
 
-    app(req)
+    app(ctx)
   end
 end
 
@@ -53,7 +53,7 @@ should render a file as a request
 
 later on, I should deff cache this
 """
-function render(ctx, filename) 
+function render(ctx, filename)
   template_location = ctx[:template_dir]
   f = open(joinpath(template_location, filename))
   content = join(readlines(f), "")

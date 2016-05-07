@@ -9,6 +9,7 @@ app = Engine()
 # middleware
 use!(app, Pivot.Logger.simple)
 use!(app, Pivot.Static.template(appdir))
+use!(app, Pivot.Static.public(appdir))
 
 handle!(GET, app, "/") do ctx
   render(ctx, "index.html")
