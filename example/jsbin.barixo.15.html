@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2016 by ZehCnaS34 (http://jsbin.com/barixo/15/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+<style id="jsbin-css">
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#game {
+  position: relative;
+  width: 1000px;
+  height: 1000px;
+  background-color: #eee;
+}
+
+.tail {
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  border-radius: 30px;
+  z-index: 80;
+}
+.head {
+  z-index: 80;
+  position: absolute;
+  height: 10px;
+  width: 10px;
+  border-radius: 15px;
+}
+.head {
+  background-color: red;
+}
+
+.tail {
+  background-color: blue;
+}
+
+.gem {
+  background-color: cyan;
+  border-radius: 10px;
+  box-shadow: 0 0 .3em #333;
+  width: 5px;
+  height: 5px;
+}
+</style>
+</head>
+<body>
+<div id="game">
+  <div class="player">
+    <div class="head">&nbsp;</div>
+  </div>
+</div>
+<script id="jsbin-javascript">
+/*jshint esnext: true */
+
+function slope(dest, source) {
+  return ((dest.y - source.y)/(dest.x - source.x)) ;
+}
+
+function isCollide(a, b) {
+    return !(
+        ((a.offset().top + a.height()) < (b.offset().top)) ||
+        (a.offset().top > (b.offset().top + b.height())) ||
+        ((a.offset().left + a.width()) < b.offset().left) ||
+        (a.offset().left > (b.offset().left + b.width()))
+    );
+}
+
+function yoffset(pos, m) {
+  return (pos.y - m * pos.x);
+}
+
+
+function rgb(r,g,b) {
+  return 'rgb('+ r + ','+ g +',' + b + ')';
+}
+
+var queue = [];
+var maxCount = 5;
+var playerLength;
+function addToQueue(elt) {
+  if (queue.length >= maxCount) {
+    queue.pop();
+  }
+  
+  queue.unshift(elt);
+}
+
+function nextPos(dest, source, weight) {
+  var x = (dest.x - source.x) / 6 * 1/weight  + source.x,
+//   var x = source.x + 1,
+      m = slope(dest, source),
+      b = yoffset(source, m);
+    
+  return {x: x, y: m * x + b};
+}
+
+function update() {
+  for (var i = 0; i < $('.player').children().length; i++ ){
+    var link = $('.player').children()[i],
+        targetPos = queue[i];
+    
+    
+    var px = $(link).offset().left,
+        py = $(link).offset().top;
+    
+    var np = nextPos(targetPos, {x: px, y: py},
+                     1);
+    
+    $(link).css({
+      top: np.y, 
+      left: np.x, 
+      position: 'absolute'
+    });
+    
+  }
+
+}
+
+function collisions() {
+  
+  var $head = $($('.player').children()[0]);
+  var $gem = $('.gem');
+  $gem.each(function () {
+      if (isCollide($head, $(this))) {
+    var $elm = $('<div class="tail">&nbsp;</div>');
+    playerLength += 1;
+    $elm.css({
+      top: queue[playerLength - 1].y,
+      left: queue[playerLength - 1].x,
+       'background-color': rgb(playerLength*2,playerLength*4,playerLength*8)
+    });
+    $('.player').append($elm);
+    console.log("adding");
+    $(this).remove();
+  }
+  });
+
+}
+
+$(function () {
+  "use strict";
+  var gameLoop;
+    playerLength = 1;
+    var gemCount = 30;
+
+  // capturing the location of the mouse
+  
+  
+  for (let g = 0; g < gemCount; g++ ) {
+     let $gem = $('<div class="gem">&nbsp;</div>');
+      $gem.css({top: Math.random() * $('#game').height(), left: Math.random() * $('#game').width(), position: 'absolute' });
+      $('#game').append($gem);
+  }
+ 
+  
+  for (let _i = playerLength; _i > 0; _i--) {
+    let $elm = $('<div class="tail">&nbsp;</div>');
+    $elm.css({
+       'background-color': rgb(_i*2,_i*4,_i*8)
+    });
+    $('.player').append($elm);
+  }
+  
+  
+    maxCount = $('.player').children().length + gemCount;
+
+  $("#game").mousemove(function (e) {
+    var x = e.pageX - $(this).offset().left,
+        y = e.pageY - $(this).offset().top;
+    addToQueue({x:x , y:y});
+  });
+  
+  $("#game").mouseover(function (e) {
+    gameLoop = setInterval(function () {
+      update();
+      collisions();
+    }, 16);
+  });
+  
+  $("#game").mouseout(function () {
+    clearInterval(gameLoop);
+  });
+  
+  
+});
+</script>
+</body>
+</html>

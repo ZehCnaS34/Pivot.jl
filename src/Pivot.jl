@@ -19,6 +19,7 @@ export Endpoint,
 
 # package code goes here
 include("verbs.jl")
+include("utils.jl")
 include("middleware.jl")
 include("Endpoint.jl")
 include("Router.jl")
