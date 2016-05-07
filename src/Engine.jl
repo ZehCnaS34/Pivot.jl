@@ -21,6 +21,10 @@ handle!(fn::Handler,
 use!(e::Engine, fn::Function) = use!(e.router, fn)
 use!(fn::Function, e::Engine) = use!(e.router, fn)
 
+function eng!(e::Engine, fn::Function)
+  e.middleware = stack(e.middleware, fn)
+end
+
 # convenience.
 rmux(app, mw) = mux(mw, app)
 

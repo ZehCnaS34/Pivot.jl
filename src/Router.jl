@@ -89,7 +89,6 @@ end
 
 use!(fn::Function, r::Router) = use!(r, fn)
 
-
 Router() = Router(StaticEndpoint(), (app, req) -> app(req))
 
 function fetch(r::Router, tokens::Vector)
