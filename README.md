@@ -9,11 +9,12 @@ using Pivot.Static
 app = Engine()
 
 # some middleware
-eng!(app, Pivot.Static.public("./public"))
-use!(app, Pivot.Static.template("./views"))
+use!(app, Pivot.Logger.simple)
+use!(app, Pivot.Static.template("./templates"))
 
 # Handle a request
 handle!(GET, app, "/") do ctx
+  # The index.html file will is located in the templates directory
   render(ctx, "index.html")
 end
 
