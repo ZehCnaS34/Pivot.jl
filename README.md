@@ -10,6 +10,7 @@
 - [ ] Create CLI
   - [ ] Create a scaffolding system
 - [ ] Build promotional website
+- [ ] Support Docker.io natively for deployment
  
 
 ## Simple Example
