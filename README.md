@@ -1,6 +1,17 @@
+# WARNING NOT DONE!
+
 # Pivot
 
-# WARNING NOT DONE!
+
+## TODO List
+
+- [ ] Find Julia Html Templating Library (Or make one)
+- [ ] Find Julia ORM (Or make one)
+- [ ] Support HTTPS
+- [ ] Create CLI
+  - [ ] Create a scaffolding system
+- [ ] Build promotional website
+ 
 
 ```julia
 using Pivot
