@@ -24,5 +24,6 @@ include("middleware.jl")
 include("Endpoint.jl")
 include("Router.jl")
 include("Engine.jl")
+include("Rendering.jl")
 
 end # module
