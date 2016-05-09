@@ -18,4 +18,8 @@ function render(ctx, template_name, data=Dict())
   error("Render not implemented")
 end
 
+function markdown(ctx, file, data=Dict())
+  error("Markdown not implemented")
+end
+
 end
