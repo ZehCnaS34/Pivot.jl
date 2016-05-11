@@ -34,6 +34,14 @@ const ETM = Dict(
   "html" => "text/html"
 )
 
+function etm(s)
+  println(s)
+  if in(ETM |> keys, s)
+    return ETM[s]
+  end
+  "text/plain"
+end
+
 """
 # public serve some static files?
 """
@@ -50,7 +58,7 @@ function public(public_directory)
       res = Response(join(readlines(f), ""))
       println(res)
       close(f)
-      res.headers["Content-Type"] = ETM[ext]
+      res.headers["Content-Type"] = etm(ext) * "; charset=utf-8"
       return res
     end
 
