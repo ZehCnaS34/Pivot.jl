@@ -1,4 +1,4 @@
-using URIParser
+using URIParser, MbedTLS
 
 """
 # Engine
@@ -47,7 +47,7 @@ end
 
 runs the server
 """
-function run(e::Engine, port::Number=8080)
+function run(e::Engine, port::Number=8080; keyspath="")
   Pivot.finalize!(e)
   http = HttpHandler() do req::Request, res::Response
     # need to parse the path
@@ -58,6 +58,20 @@ function run(e::Engine, port::Number=8080)
   end
 
   server = Server(http)
-  HttpServer.run(server, port)
 
+  # ssl for https
+  # TODO: test remotely
+  if keyspath != ""
+    rel = create_rp(keyspath)
+    generate_ssl(rel(""))
+    println(rel(""))
+    c = read(STDIN, Char)
+
+    cert = MbedTLS.crt_parse_file(rel("keys/server.crt"))
+    key = MbedTLS.parse_keyfile(rel("keys/server.key"))
+    HttpServer.run(server, port=port, ssl=(cert, key))
+    return
+  end
+
+  HttpServer.run(server, port)
 end

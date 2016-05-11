@@ -8,6 +8,7 @@ create_rp(rt::AbstractString) = p -> joinpath(abspath(rt, p))
 function generate_ssl(root_path)
   rp = create_rp(root_path)
   if !isfile("keys/server.crt" |> rp)
+    println("Generating SSH files")
     @unix_only begin
       Base.run(`mkdir -p $(rp("keys"))`)
       Base.run(`openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout

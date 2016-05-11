@@ -1,7 +1,7 @@
 module Pivot
-__precompile__()
-using Mux
-using HttpServer
+#=__precompile__()=#
+using MbedTLS, Mux, HttpServer
+
 
 export Endpoint,
   Router,
