@@ -89,9 +89,9 @@ end
 
 use!(fn::Function, r::Router) = use!(r, fn)
 
-Router() = Router(StaticEndpoint(), (app, req) -> app(req))
+Router() = Router(StaticEndpoint(), Mux.basiccatch)
 
 function fetch(r::Router, tokens::Vector)
-    tokens = deepcopy(tokens)
-    r.root[tokens]
+    toks = deepcopy(tokens)
+    r.root[toks]
 end

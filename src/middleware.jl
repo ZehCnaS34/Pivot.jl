@@ -16,6 +16,7 @@ end
 
 module Static
 export render
+import HttpServer.Response
 
 """
 Defines the proper variables for the template home
@@ -27,6 +28,12 @@ function template(template_directory)
   end
 end
 
+const ETM = Dict(
+  "js" => "application/javascript",
+  "css" => "text/css",
+  "html" => "text/html"
+)
+
 """
 # public serve some static files?
 """
@@ -35,11 +42,16 @@ function public(public_directory)
     resourcefile = joinpath(public_directory,
       join(ctx[:request][:path], "/")) |> abspath
 
+
     if isfile(resourcefile)
+      ext = split(resourcefile |> basename, ".")[end]
+      println("Ext $ext")
       f = open(resourcefile)
-      content = join(readlines(f), "")
+      res = Response(join(readlines(f), ""))
+      println(res)
       close(f)
-      return content
+      res.headers["Content-Type"] = ETM[ext]
+      return res
     end
 
     app(ctx)

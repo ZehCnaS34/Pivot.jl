@@ -33,6 +33,14 @@ just calls the finalize method that is provided by endpoint
 """
 finalize!(e::Engine) = finalize!(e.router.root)
 
+function buildhandler(router::Router)
+  function (ctx)
+    ep = fetch(router, ctx[:request][:path])
+    method = STI[ctx[:request][:method]]
+    ctx[:endpoint] = ep
+    ctx |> proper_method(method, ep.handlermap)
+  end
+end
 
 """
 # run
@@ -44,14 +52,9 @@ function run(e::Engine, port::Number=8080)
   http = HttpHandler() do req::Request, res::Response
     # need to parse the path
     rq = req |> Mux.todict |> Pivot.splitquery
-    method = STI[rq[:method]]
 
-    endpoint = fetch(e.router, rq[:path])
-    handler = proper_method(method, endpoint.handlermap)
-    mux(e.router.middleware, handler)(Dict(
-      :request => rq,
-      :endpoint => endpoint
-    ))
+    mux(e.router.middleware, buildhandler(e.router))(
+      Dict{Symbol, Any}(:request => rq))
   end
 
   server = Server(http)
