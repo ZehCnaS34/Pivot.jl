@@ -29,14 +29,13 @@ function template(template_directory)
 end
 
 const ETM = Dict(
-  "js" => "application/javascript",
-  "css" => "text/css",
+  "js"   => "application/javascript",
+  "css"  => "text/css",
   "html" => "text/html"
 )
 
 function etm(s)
-  println(s)
-  if in(ETM |> keys, s)
+  if in(s, ETM |> keys)
     return ETM[s]
   end
   "text/plain"
@@ -50,13 +49,10 @@ function public(public_directory)
     resourcefile = joinpath(public_directory,
       join(ctx[:request][:path], "/")) |> abspath
 
-
     if isfile(resourcefile)
       ext = split(resourcefile |> basename, ".")[end]
-      println("Ext $ext")
       f = open(resourcefile)
       res = Response(join(readlines(f), ""))
-      println(res)
       close(f)
       res.headers["Content-Type"] = etm(ext) * "; charset=utf-8"
       return res

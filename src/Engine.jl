@@ -22,10 +22,6 @@ handle!(fn::Handler,
 use!(e::Engine, fn::Function) = use!(e.router, fn)
 use!(fn::Function, e::Engine) = use!(e.router, fn)
 
-# convenience.
-rmux(app, mw) = mux(mw, app)
-
-
 """
 # finalize!
 
@@ -64,8 +60,6 @@ function run(e::Engine, port::Number=8080; keyspath="")
   if keyspath != ""
     rel = create_rp(keyspath)
     generate_ssl(rel(""))
-    println(rel(""))
-    c = read(STDIN, Char)
 
     cert = MbedTLS.crt_parse_file(rel("keys/server.crt"))
     key = MbedTLS.parse_keyfile(rel("keys/server.key"))
