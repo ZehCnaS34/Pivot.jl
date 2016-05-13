@@ -11,15 +11,15 @@ use!(app, Pivot.Logger.simple)
 use!(app, Pivot.Static.template(appdir))
 use!(app, Pivot.Static.public(appdir))
 
-handle!(GET, app, "/") do ctx
+handle!(app, GET, "/") do ctx
   render(ctx, "index.html")
 end
 
-handle!(GET, app, "/game") do ctx
+handle!(app, GET, "/game") do ctx
   render(ctx, "jsbin.barixo.15.html")
 end
 
-handle!(GET, app, "/:name") do ctx
+handle!(app, GET, "/:name") do ctx
   endpoint = ctx[:endpoint]
   render(ctx, "namer.html", Dict(
     "name" => endpoint.captured

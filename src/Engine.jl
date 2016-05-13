@@ -14,10 +14,12 @@ end
 # right now, I'll just use the default Mux
 Engine() = Engine(Pivot.Router())
 
-handle!(fn::Handler,
-        method::Verb,
-        e::Engine,
-        path::AbstractString) = handle!(fn, method, e.router, parseurl(path))
+handle!(
+  fn::Handler,
+  e::Engine,
+  method::Verb,
+  path::AbstractString
+) = handle!(fn, e.router, method, parseurl(path))
 
 use!(e::Engine, fn::Function) = use!(e.router, fn)
 use!(fn::Function, e::Engine) = use!(e.router, fn)

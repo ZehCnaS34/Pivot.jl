@@ -63,24 +63,33 @@ end
 attaches the handler::Function to the handlemap contained on the leaf endpoint
 of the path.
 """
-function handle!(fn::Handler,
-                 method::Verb,
-                 ep::Endpoint)
+function handle!(
+  fn::Handler,
+  ep::Endpoint,
+  method::Verb
+)
   ep.handlermap[method] = fn
 end
 
-function handle!(fn::Handler, method::Verb, router::Router, path::Vector)
+function handle!(
+  fn::Handler, 
+  router::Router, 
+  method::Verb, 
+  path::Vector
+)
   endpoint = router.root
   if !isempty(path)
     endpoint = push!(endpoint, path)
   end
-  handle!(fn, method, endpoint)
+  handle!(fn, endpoint, method)
 end
 
-handle!(fn::Handler,
-  method::Verb,
+handle!(
+  fn::Handler,
   router::Router,
-  path::AbstractString) = handle!(fn, method, router, parseurl(path))
+  method::Verb,
+  path::AbstractString
+) = handle!(fn, router, method, parseurl(path))
 
 
 function use!(router::Router, fn::Function)

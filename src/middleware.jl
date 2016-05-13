@@ -16,9 +16,9 @@ end
 end
 
 module Static
-export render
-import HttpServer.Response
 using Mustache
+export render
+import HttpServer: Response, mimetypes
 
 """
 Defines the proper variables for the template home
@@ -30,15 +30,9 @@ function template(template_directory)
   end
 end
 
-const ETM = Dict(
-  "js"   => "application/javascript",
-  "css"  => "text/css",
-  "html" => "text/html"
-)
-
-function etm(s)
-  if in(s, mimetypes)
-    return ETM[s]
+function mime(s)
+  if in(s, mimetypes |> keys)
+    return mimetypes[s]
   end
   "text/plain"
 end
@@ -56,7 +50,7 @@ function public(public_directory)
       f = open(resourcefile)
       res = Response(join(readlines(f), ""))
       close(f)
-      res.headers["Content-Type"] = etm(ext) * "; charset=utf-8"
+      res.headers["Content-Type"] = mime(ext) * "; charset=utf-8"
       return res
     end
 
