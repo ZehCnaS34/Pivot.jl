@@ -1,4 +1,5 @@
 module Logger
+import HttpServer.mimetypes
 
 """
 # simple
@@ -35,7 +36,7 @@ const ETM = Dict(
 )
 
 function etm(s)
-  if in(s, ETM |> keys)
+  if in(s, mimetypes)
     return ETM[s]
   end
   "text/plain"
