@@ -21,7 +21,7 @@ using Pivot
 
 app = Engine()
 
-handle!(GET, app, "/") do ctx
+handle!(app, GET, "/") do ctx
   "This is a simple response"
 end
 
@@ -38,7 +38,7 @@ app = Engine()
 
 use!(app, teamplte_directory("./path-to-templates"))
 
-handle!(GET, app, "/") do ctx
+handle!(app, GET, "/") do ctx
   render(ctx, "template-name", Dict(
     :key1 => "value",
     :key2 => "value"
