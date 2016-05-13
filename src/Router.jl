@@ -95,3 +95,18 @@ function fetch(r::Router, tokens::Vector)
   toks = deepcopy(tokens)
   r.root[toks]
 end
+
+function make_partial_route(method, path, handler)
+  :(handle!($(esc(handler)), $(esc(method)), $(esc(path))))
+end
+
+macro get(phandler)
+  path = phandler.args[1]
+  handler = phandler.args[2]
+
+  var_name = (join(split(path, "/", keep=false), "_") * "path") |> Symbol
+  println(var_name)
+  println(phandler)
+
+  :($var_name = make_partial_route(GET, $path, $(esc(handler))))
+end
