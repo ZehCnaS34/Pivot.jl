@@ -18,6 +18,7 @@ end
 module Static
 export render
 import HttpServer.Response
+using Mustache
 
 """
 Defines the proper variables for the template home
@@ -70,12 +71,12 @@ should render a file as a request
 
 later on, I should deff cache this
 """
-function render(ctx, filename)
+function render(ctx, filename, data=Dict())
   template_location = ctx[:template_dir]
   f = open(joinpath(template_location, filename))
   content = join(readlines(f), "")
   close(f)
-  content
+  Mustache.render(content, data)
 end
 
 end

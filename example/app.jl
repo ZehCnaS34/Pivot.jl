@@ -21,7 +21,9 @@ end
 
 handle!(GET, app, "/:name") do ctx
   endpoint = ctx[:endpoint]
-  render(ctx, "namer.html")
+  render(ctx, "namer.html", Dict(
+    "name" => endpoint.captured
+  ))
 end
 
 Pivot.run(app, 8080)
