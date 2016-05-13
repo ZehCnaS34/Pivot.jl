@@ -26,3 +26,14 @@ function splitquery(req)
   req[:query] = uri.query
   req
 end
+
+
+macro include_all_in(sym_or_string)
+  quote
+    for file_name in readdir($(esc(sym_or_string)))
+      fn_abspath = joinpath($(esc(sym_or_string)), file_name) |> abspath
+      println(fn_abspath)
+      include(fn_abspath)
+    end
+  end
+end
