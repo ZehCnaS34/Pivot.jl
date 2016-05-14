@@ -21,6 +21,13 @@ handle!(
   path::AbstractString
 ) = handle!(fn, e.router, method, parseurl(path))
 
+handle!(
+  e::Engine,
+  fn::Handler,
+  method::Verb,
+  path::AbstractString
+) = handle!(fn, e.router, method, parseurl(path))
+
 use!(e::Engine, fn::Function) = use!(e.router, fn)
 use!(fn::Function, e::Engine) = use!(e.router, fn)
 

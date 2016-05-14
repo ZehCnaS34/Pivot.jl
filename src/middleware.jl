@@ -16,6 +16,7 @@ end
 end
 
 module Static
+
 using Mustache
 export render
 import HttpServer: Response, mimetypes

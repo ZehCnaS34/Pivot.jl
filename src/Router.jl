@@ -1,5 +1,7 @@
 import Base.fetch
 
+export Routing
+
 """
 Router is the root of the tree
 """
@@ -91,6 +93,12 @@ handle!(
   path::AbstractString
 ) = handle!(fn, router, method, parseurl(path))
 
+handle!(
+  router::Router,
+  fn::Handler,
+  method::Verb,
+  path::AbstractString
+) = handle!(fn, router, method, parseurl(path))
 
 function use!(router::Router, fn::Function)
   router.middleware = stack(router.middleware, fn)
@@ -105,17 +113,39 @@ function fetch(r::Router, tokens::Vector)
   r.root[toks]
 end
 
+
+module Routing
+using Pivot
+
+"""
+# make_partial_route
+
+build a 
+"""
 function make_partial_route(method, path, handler)
-  :(handle!($(esc(handler)), $(esc(method)), $(esc(path))))
+  :(handle!($(handler), $(method), $(path)))
 end
 
+"""
+# get
+
+"/" => HomeController.index
+"""
 macro get(phandler)
-  path = phandler.args[1]
-  handler = phandler.args[2]
-
-  var_name = (join(split(path, "/", keep=false), "_") * "path") |> Symbol
-  println(var_name)
-  println(phandler)
-
-  :($var_name = make_partial_route(GET, $path, $(esc(handler))))
+  :(make_partial_route(GET, $(phandler.args[1]), $(esc(phandler.args[2]))))
 end
+
+macro post(phandler)
+  :(make_partial_route(POST, $(phandler.args[1]), $(esc(phandler.args[2]))))
+end
+
+macro put(phandler)
+  :(make_partial_route(PUT, $(phandler.args[1]), $(esc(phandler.args[2]))))
+end
+
+macro delete(phandler)
+  :(make_partial_route(DELETE, $(phandler.args[1]), $(esc(phandler.args[2]))))
+end
+
+end
+

@@ -1,5 +1,7 @@
 create_rp(rt::AbstractString) = p -> joinpath(abspath(rt, p))
 
+export Utility
+
 """
 # generate_ssl
 
@@ -27,13 +29,17 @@ function splitquery(req)
   req
 end
 
+module Utility
 
 macro include_all_in(sym_or_string)
   quote
     for file_name in readdir($(esc(sym_or_string)))
       fn_abspath = joinpath($(esc(sym_or_string)), file_name) |> abspath
-      println(fn_abspath)
       include(fn_abspath)
     end
   end
+end
+
+make_appdir(dir) = dir |> dirname |> abspath
+
 end
