@@ -1,5 +1,3 @@
-# WARNING NOT DONE!
-
 # Pivot
 
 ## TODO List
