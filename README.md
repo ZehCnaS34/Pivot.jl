@@ -4,9 +4,10 @@
 
 ## TODO List
 
-- [ ] Find Julia Html Templating Library (Or make one)
+- [x] Find Julia Html Templating Library (Using Handlebars.jl)
 - [ ] Find Julia ORM (Or make one)
-- [ ] Support HTTPS
+- [-] Support HTTPS 
+  - [x] Need to test remotely
 - [ ] Create CLI
   - [ ] Create a scaffolding system
 - [ ] Build promotional website
