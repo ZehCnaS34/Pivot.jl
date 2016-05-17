@@ -4,8 +4,9 @@
 
 - [x] Find Julia Html Templating Library (Using Handlebars.jl)
 - [ ] Find Julia ORM (Or make one)
-- [-] Support HTTPS 
-  - [x] Need to test remotely
+- [ ] Support HTTPS
+  - [ ] test remotely 
+  - [x] setup simple folder structure for ssl keys 
 - [ ] Create CLI
   - [ ] Create a scaffolding system
 - [ ] Build promotional website
