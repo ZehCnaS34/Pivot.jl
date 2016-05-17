@@ -15,6 +15,5 @@ root = StaticEndpoint()
 
 # learning
 @action index(conn) begin
-    @import name age
     @> conn render("index.html")
 end

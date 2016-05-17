@@ -31,6 +31,9 @@ end
 
 module Utility
 
+"""
+# including all files in a folder
+"""
 macro include_all_in(sym_or_string)
   quote
     for file_name in readdir($(esc(sym_or_string)))

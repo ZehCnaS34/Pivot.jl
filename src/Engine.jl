@@ -38,11 +38,18 @@ just calls the finalize method that is provided by endpoint
 """
 finalize!(e::Engine) = finalize!(e.router.root)
 
+"""
+# buildhandler
+
+returns a function that is considered the app of mux middleware.
+
+This function fetched the proper endpoint, along with the proper handler, then passes the context through the middleware
+"""
 function buildhandler(router::Router)
   function (ctx)
-    ep = fetch(router, ctx[:request][:path])
+    ep, params= fetch(router, ctx[:request][:path])
     method = STI[ctx[:request][:method]]
-    ctx[:endpoint] = ep
+    ctx[:params] = params
     ctx |> proper_method(method, ep.handlermap)
   end
 end

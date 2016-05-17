@@ -108,11 +108,7 @@ use!(fn::Function, r::Router) = use!(r, fn)
 
 Router() = Router(StaticEndpoint(), Mux.basiccatch)
 
-function fetch(r::Router, tokens::Vector)
-  toks = deepcopy(tokens)
-  r.root[toks]
-end
-
+fetch(r::Router, tokens::Vector) = r.root[deepcopy(tokens), Dict()]
 
 module Routing
 using Pivot

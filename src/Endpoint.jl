@@ -71,20 +71,52 @@ function getindex(ep::Endpoint, tag::AbstractString)
     cep == tag && return cep
   end
 
+  println((ep))
+
   error("No endpoint named $tag.")
 end
 
-"""
-getindex returns the child endpoint of the parent endpoint that
-matches the string
-"""
-function getindex(ep::Endpoint, tags::Vector; eqfn=(a,b) -> true)
+function getindex(
+  ep::Endpoint, 
+  tags::AbstractVector
+)
+  println("I'm in here... and shouldn't be")
   isempty(tags) && return ep
   leaf = ep[shift!(tags)]
   while !isempty(tags)
     leaf = leaf[shift!(tags)]
   end
   leaf
+end
+
+
+function getindex(
+  ep::Endpoint, 
+  tag::AbstractString, 
+  captured::Dict{Any, Any}
+)
+  ret = ep[tag]
+  if typeof(ret) == DynamicEndpoint
+    captured[ret.tag[2:end]] = ret.captured
+  end
+  (ret, captured)
+end
+
+"""
+getindex returns the child endpoint of the parent endpoint that
+matches the string
+"""
+function getindex(
+  ep::Endpoint, 
+  tags::AbstractVector,
+  captured::Dict{Any, Any}
+)
+  isempty(tags) && return (ep, captured)
+  leaf, captured = ep[shift!(tags), captured]
+  while !isempty(tags)
+    leaf, captured = leaf[shift!(tags), captured]
+  end
+  leaf, captured
 end
 
 function push!(ep::Endpoint, o::Endpoint)
@@ -101,14 +133,6 @@ of ep.
 """
 function push!(ep::Endpoint, tag::AbstractString;
                dynamic_prefix=':')
-  # only push as static
-  #=if !in(tag,ep)=#
-    #=if startswith(tag, dynamic_prefix)=#
-      #=push!(ep, DynamicEndpoint(tag))=#
-    #=else=#
-      #=push!(ep, StaticEndpoint(tag))=#
-    #=end=#
-  #=end=#
   push!(ep, StaticEndpoint(tag))
   ep[tag]
 end
@@ -148,6 +172,7 @@ This must be called after all of the routing is defined
 # TODO: make iterative
 """
 function finalize!(root::Endpoint; dynamic_prefix=':')
+  println("Finalizing")
   if startswith(root.tag, dynamic_prefix) && typeof(root) == StaticEndpoint
     children = root.children
     hm = root.handlermap
@@ -158,3 +183,6 @@ function finalize!(root::Endpoint; dynamic_prefix=':')
   root.children = map(finalize!, root.children)
   return root
 end
+
+
+isdynamic(e::Endpoint) = startswith(e.tag, ":")
