@@ -9,7 +9,7 @@ function simple(ap, ctx)
   s = time()
   output =  ap(ctx)
   f = time()
-  println("[$(ctx[:request][:method]) $(join(ctx[:request][:path], "/") * "/")] -- $(f - s) (s)")
+  println("[$(ctx[:method]) $(join(ctx[:path], "/") * "/")] -- $(f - s) (s)")
   output
 end
 
@@ -44,7 +44,7 @@ end
 function public(public_directory)
   function (app, ctx)
     resourcefile = joinpath(public_directory,
-      join(ctx[:request][:path], "/")) |> abspath
+      join(ctx[:path], "/")) |> abspath
 
     if isfile(resourcefile)
       ext = split(resourcefile |> basename, ".")[end]

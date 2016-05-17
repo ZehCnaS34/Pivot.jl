@@ -2,10 +2,6 @@ using URIParser, MbedTLS
 
 """
 # Engine
-Not sure if this is the proper location of the middleware.
-
-If I put it here, Implementing scope wise middleware will be a little more
-difficult.
 """
 type Engine
   router
@@ -47,12 +43,13 @@ This function fetched the proper endpoint, along with the proper handler, then p
 """
 function buildhandler(router::Router)
   function (ctx)
-    ep, params= fetch(router, ctx[:request][:path])
-    method = STI[ctx[:request][:method]]
+    ep, params= fetch(router, ctx[:path])
+    method = STI[ctx[:method]]
     ctx[:params] = params
     ctx |> proper_method(method, ep.handlermap)
   end
 end
+
 
 """
 # run
@@ -64,9 +61,8 @@ function run(e::Engine, port::Number=8080; keyspath="")
   http = HttpHandler() do req::Request, res::Response
     # need to parse the path
     rq = req |> Mux.todict |> Pivot.splitquery
-
-    mux(e.router.middleware, buildhandler(e.router))(
-      Dict{Symbol, Any}(:request => rq))
+    rq[:router] = e.router
+    mux(e.router.middleware, buildhandler(e.router))(rq)
   end
 
   server = Server(http)

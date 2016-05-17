@@ -172,7 +172,6 @@ This must be called after all of the routing is defined
 # TODO: make iterative
 """
 function finalize!(root::Endpoint; dynamic_prefix=':')
-  println("Finalizing")
   if startswith(root.tag, dynamic_prefix) && typeof(root) == StaticEndpoint
     children = root.children
     hm = root.handlermap

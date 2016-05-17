@@ -8,6 +8,7 @@ Router is the root of the tree
 type Router
   root::Endpoint
   middleware::Function
+  Router() = new(StaticEndpoint(), Mux.basiccatch)
 end
 
 """
@@ -105,43 +106,7 @@ function use!(router::Router, fn::Function)
 end
 
 use!(fn::Function, r::Router) = use!(r, fn)
-
-Router() = Router(StaticEndpoint(), Mux.basiccatch)
-
 fetch(r::Router, tokens::Vector) = r.root[deepcopy(tokens), Dict()]
 
-module Routing
-using Pivot
-
-"""
-# make_partial_route
-
-build a 
-"""
-function make_partial_route(method, path, handler)
-  :(handle!($(handler), $(method), $(path)))
-end
-
-"""
-# get
-
-"/" => HomeController.index
-"""
-macro get(phandler)
-  :(make_partial_route(GET, $(phandler.args[1]), $(esc(phandler.args[2]))))
-end
-
-macro post(phandler)
-  :(make_partial_route(POST, $(phandler.args[1]), $(esc(phandler.args[2]))))
-end
-
-macro put(phandler)
-  :(make_partial_route(PUT, $(phandler.args[1]), $(esc(phandler.args[2]))))
-end
-
-macro delete(phandler)
-  :(make_partial_route(DELETE, $(phandler.args[1]), $(esc(phandler.args[2]))))
-end
-
-end
+# Router specific helper functions
 

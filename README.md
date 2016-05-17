@@ -30,6 +30,9 @@ run(app, 8080)
 ```
 
 ### Rendering an Html Template
+
+Pivot is uses [Mustache.jl](https://github.com/jverzani/Mustache.jl) for html templating.
+
 ```julia
 using Pivot
 using Pivot.Rendering
@@ -39,7 +42,7 @@ app = Engine()
 use!(app, teamplte_directory("./path-to-templates"))
 
 handle!(app, GET, "/") do ctx
-  render(ctx, "template-name", Dict(
+  render(ctx, "template-name.html", Dict(
     :key1 => "value",
     :key2 => "value"
   ))
