@@ -2,10 +2,11 @@ module Routing
 using Pivot
 export redirect_to
 
+# TODO: make this DRY
 function redirect_to(ctx, route)
   path = split(route, "/", keep=false)
-  ep, params= fetch(ctx[:router], path)
-  method = Pivot.STI[ctx[:method]]
+  ep, params = fetch(ctx[:router], path)
+  method = Pivot.STI[ctx[:request][:method]]
   ctx[:params] = params
   ctx |> Pivot.proper_method(method, ep.handlermap)
 end

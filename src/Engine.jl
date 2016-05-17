@@ -43,8 +43,8 @@ This function fetched the proper endpoint, along with the proper handler, then p
 """
 function buildhandler(router::Router)
   function (ctx)
-    ep, params= fetch(router, ctx[:path])
-    method = STI[ctx[:method]]
+    ep, params = fetch(router, ctx[:request][:path])
+    method = STI[ctx[:request][:method]]
     ctx[:params] = params
     ctx |> proper_method(method, ep.handlermap)
   end
@@ -60,9 +60,11 @@ function run(e::Engine, port::Number=8080; keyspath="")
   Pivot.finalize!(e)
   http = HttpHandler() do req::Request, res::Response
     # need to parse the path
+    ctx = Dict{Symbol, Any}()
     rq = req |> Mux.todict |> Pivot.splitquery
-    rq[:router] = e.router
-    mux(e.router.middleware, buildhandler(e.router))(rq)
+    ctx[:router] = e.router
+    ctx[:request] = rq
+    mux(e.router.middleware, buildhandler(e.router))(ctx)
   end
 
   server = Server(http)

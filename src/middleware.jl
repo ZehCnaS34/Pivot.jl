@@ -1,3 +1,28 @@
+module Filter
+
+"""
+# query_todict
+
+Converts the query from the request to a dictionary. Then stores in to locations
+ctx[:request][:query] -- overwriting the raw version
+ctx[:query] -- for convenience
+"""
+function query_todict(key_type=string)
+  function (app, ctx) 
+    raw_query = ctx[:request][:query]
+    tda = filter(map((kv) -> split(kv, "=") ,split(raw_query, "&"))) do p
+      length(p) > 1
+    end
+    marshalled = [ key_type(k) => v for (k,v) in tda]
+    ctx[:request][:query] = marshalled
+    ctx[:query] = marshalled
+    app(ctx)
+  end
+end
+
+end
+
+
 module Logger
 import HttpServer.mimetypes
 
@@ -9,7 +34,7 @@ function simple(ap, ctx)
   s = time()
   output =  ap(ctx)
   f = time()
-  println("[$(ctx[:method]) $(join(ctx[:path], "/") * "/")] -- $(f - s) (s)")
+  println("[$(ctx[:request][:method]) $(join(ctx[:request][:path], "/") * "/")] -- $(f - s) (s)")
   output
 end
 
@@ -38,13 +63,14 @@ function mime(s)
   "text/plain"
 end
 
+
 """
 # public serve some static files?
 """
 function public(public_directory)
   function (app, ctx)
     resourcefile = joinpath(public_directory,
-      join(ctx[:path], "/")) |> abspath
+      join(ctx[:request][:path], "/")) |> abspath
 
     if isfile(resourcefile)
       ext = split(resourcefile |> basename, ".")[end]
