@@ -1,4 +1,19 @@
+module Security
+
+SEED = "+_)(*&^%\$#@!+=-`~\";:/?\\><.,qwertyuiopasdfghjklzxcvbnm123456789"
+
+
+function csrf(app, ctx)
+  ctx[:csrf_token] = "nothing yet"
+  app(ctx)
+end
+
+end
+
+
 module Filter
+using HttpServer
+import HttpCommon: Cookie
 
 """
 # query_todict
@@ -17,6 +32,18 @@ function query_todict(key_type=string)
     ctx[:request][:query] = marshalled
     ctx[:query] = marshalled
     app(ctx)
+  end
+end
+
+function session()
+  function (app, ctx)
+    resp = app(ctx)
+
+    resp = Response(resp)
+
+    resp.cookies["session"] = Cookie("session", "asdpfiojasdpofij")
+
+    resp
   end
 end
 
