@@ -4,6 +4,13 @@
 
 - [x] Find Julia Html Templating Library (Using Handlebars.jl)
 - [ ] Find Julia ORM (Or make one)
+- [x] Simple Session Management
+- [ ] Cookies
+  - [x] Cookie middleware
+  - [ ] api to insert cookies into the response
+  - [ ] api to parse cookies from response
+- [ ]  Security
+  - [ ] CSFR
 - [ ] Support HTTPS
   - [ ] test remotely
   - [x] setup simple folder structure for ssl keys
