@@ -31,14 +31,14 @@ function csrf(app, ctx)
 end
 
 
-function setstore!(ctx, key, value) 
+function setin_store!(ctx, key, value) 
   !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
   !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
   sessionid = ctx[:cookies]["PIVOTSESSIONID"]
   ctx[:store][sessionid][key] = value
 end
 
-function getstore(ctx, key)
+function getin_store(ctx, key)
   !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
   !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
   sessionid = ctx[:cookies]["PIVOTSESSIONID"]
@@ -48,9 +48,24 @@ end
 end
 
 
+# TODO: make this module dry
 module Filter
 using HttpServer
 import HttpCommon: Cookie
+
+function body_todict(app, ctx)
+  !in(:data, ctx[:request] |> keys) && begin
+    ctx[:data] = Dict()
+    return app(ctx)
+  end
+  raw_data = convert(ASCIIString, ctx[:request][:data])
+  raw_data = split(raw_data, "&")
+  raw_data = map((kv) -> split(kv, "="), raw_data)
+  raw_data = filter((l) -> length(l) > 1, raw_data)
+  data = [ k => v for (k, v) in raw_data ] |> Dict
+  ctx[:body] = data
+  app(ctx)
+end
 
 function cookie_todict(app, ctx)
   !in("Cookie", ctx[:request][:headers] |> keys) && begin
@@ -124,12 +139,15 @@ function template(template_directory)
   end
 end
 
+
 function mime(s)
   if in(s, mimetypes |> keys)
     return mimetypes[s]
   end
   "text/plain"
 end
+
+
 
 
 """
