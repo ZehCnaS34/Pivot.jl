@@ -17,8 +17,9 @@ abstract Endpoint
 const ROOT_TAG = "__pivot__"
 
 # For debugging. Makes endpoints a little nicer looking in the terminal.
-function repr(e::Endpoint)
-  "$(e.tag)(" * join(map(repr, e.children), ",") * ")"
+function repr(e::Endpoint, offset=0)
+  val = (typeof(e) == StaticEndpoint) ?  "S" : "D"
+  repeat("\t", offset) * "$(e.tag)-$val$offset-$(length(e.handlermap))-($((isempty(e.children))?"":"\n")" * join(map((ep) -> repr(ep, offset+1), e.children), "\n") * ")"
 end
 
 """
@@ -71,7 +72,6 @@ function getindex(ep::Endpoint, tag::AbstractString)
     cep == tag && return cep
   end
 
-  println((ep))
 
   error("No endpoint named $tag.")
 end
@@ -80,7 +80,6 @@ function getindex(
   ep::Endpoint, 
   tags::AbstractVector
 )
-  println("I'm in here... and shouldn't be")
   isempty(tags) && return ep
   leaf = ep[shift!(tags)]
   while !isempty(tags)
@@ -120,6 +119,9 @@ function getindex(
 end
 
 function push!(ep::Endpoint, o::Endpoint)
+  if in(o.tag, ep)
+    return ep[o.tag]
+  end
   push!(ep.children, o)
   sort!(ep.children)
   o
@@ -172,6 +174,7 @@ This must be called after all of the routing is defined
 # TODO: make iterative
 """
 function finalize!(root::Endpoint; dynamic_prefix=':')
+  #=println("Finalizing $(root.tag)")=#
   if startswith(root.tag, dynamic_prefix) && typeof(root) == StaticEndpoint
     children = root.children
     hm = root.handlermap
@@ -180,8 +183,6 @@ function finalize!(root::Endpoint; dynamic_prefix=':')
     root.handlermap = hm
   end
   root.children = map(finalize!, root.children)
+  sort!(root.children)
   return root
 end
-
-
-isdynamic(e::Endpoint) = startswith(e.tag, ":")
