@@ -5,13 +5,13 @@
 - [x] Find Julia Html Templating Library (Using Handlebars.jl)
 - [ ] Find Julia ORM (Or make one)
 - [ ] Support HTTPS
-  - [ ] test remotely 
-  - [x] setup simple folder structure for ssl keys 
+  - [ ] test remotely
+  - [x] setup simple folder structure for ssl keys
 - [ ] Create CLI
   - [ ] Create a scaffolding system
 - [ ] Build promotional website
 - [ ] Support Docker.io natively for deployment
- 
+
 
 ## Examples
 
@@ -35,7 +35,7 @@ Pivot is uses [Mustache.jl](https://github.com/jverzani/Mustache.jl) for html te
 
 ```julia
 using Pivot
-using Pivot.Rendering
+using Pivot.Static
 
 app = Engine()
 
