@@ -3,7 +3,8 @@
 ## TODO List
 
 - [x] Find Julia Html Templating Library (Using Handlebars.jl)
-- [ ] Find Julia ORM (Or make one)
+- [ ] Find Julia ORM (BDI)
+  - [ ] Integrate DBI into Pivot
 - [x] Simple Session Management
 - [ ] Cookies
   - [x] Cookie middleware
