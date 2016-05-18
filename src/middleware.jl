@@ -1,11 +1,48 @@
 module Security
+using HttpServer, Nettle
+import HttpCommon: Cookie
 
-SEED = "+_)(*&^%\$#@!+=-`~\";:/?\\><.,qwertyuiopasdfghjklzxcvbnm123456789"
+#  TODO: refactor
+function session()
+  sessionstore = Dict{Any, Dict}()
+  function (app, ctx)
+    ctx[:store] = sessionstore
+    ctx[:cookies]["PIVOTSESSIONID"] = (!in("PIVOTSESSIONID", keys(ctx[:cookies]))) ? "" : ctx[:cookies]["PIVOTSESSIONID"]
+    ctx[:cookies]["PIVOTSESSIONID"] = if in(ctx[:cookies]["PIVOTSESSIONID"], sessionstore |> keys)
+      Cookie("PIVOTSESSIONID", ctx[:cookies]["PIVOTSESSIONID"]).value
+    else
+      # ehhhh lol
+      sessionid = hexdigest("sha256", "create-session$(rand(512))")
+      sessionstore[sessionid] = Dict{Any, Any}()
+      sessionid
+    end
 
+    resp = app(ctx)
+    resp = Response(resp)
+    resp.cookies["PIVOTSESSIONID"] = Cookie("PIVOTSESSIONID", ctx[:cookies]["PIVOTSESSIONID"])
+    resp
+  end
+end
 
 function csrf(app, ctx)
-  ctx[:csrf_token] = "nothing yet"
+  token = hexdigest("sha256", "create-session$(rand(512))")
+  setstore!(ctx, "csrf_token", token)
   app(ctx)
+end
+
+
+function setstore!(ctx, key, value) 
+  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
+  !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
+  sessionid = ctx[:cookies]["PIVOTSESSIONID"]
+  ctx[:store][sessionid][key] = value
+end
+
+function getstore(ctx, key)
+  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
+  !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
+  sessionid = ctx[:cookies]["PIVOTSESSIONID"]
+  ctx[:store][sessionid][key]
 end
 
 end
@@ -14,6 +51,21 @@ end
 module Filter
 using HttpServer
 import HttpCommon: Cookie
+
+function cookie_todict(app, ctx)
+  !in("Cookie", ctx[:request][:headers] |> keys) && begin
+    ctx[:cookies] = Dict()
+    return app(ctx)
+  end
+  dough = ctx[:request][:headers]["Cookie"]
+
+  dough = split(dough, "; ")
+  dough = map((kv) -> split(kv, "="), dough)
+  dough = filter((l) -> length(l) > 1, dough)
+  cookie = [ k => v for (k, v) in dough ] |> Dict
+  ctx[:cookies] = cookie
+  app(ctx)
+end
 
 """
 # query_todict
@@ -25,7 +77,7 @@ ctx[:query] -- for convenience
 function query_todict(key_type=string)
   function (app, ctx) 
     raw_query = ctx[:request][:query]
-    tda = filter(map((kv) -> split(kv, "=") ,split(raw_query, "&"))) do p
+    tda = filter(map((kv) -> split(kv, "="), split(raw_query, "&"))) do p
       length(p) > 1
     end
     marshalled = [ key_type(k) => v for (k,v) in tda]
@@ -35,17 +87,6 @@ function query_todict(key_type=string)
   end
 end
 
-function session()
-  function (app, ctx)
-    resp = app(ctx)
-
-    resp = Response(resp)
-
-    resp.cookies["session"] = Cookie("session", "asdpfiojasdpofij")
-
-    resp
-  end
-end
 
 end
 
