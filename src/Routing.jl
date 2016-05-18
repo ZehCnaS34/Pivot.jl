@@ -15,7 +15,7 @@ end
 """
 # make_partial_route
 
-build a 
+build an incomplete `handle!` method call
 """
 function make_partial_route(method, path, handler)
   :(handle!($(handler), $(method), $(path)))
