@@ -32,10 +32,17 @@ end
 # Does not work
 function csrf(app, ctx)
   token = hexdigest("sha256", "create-session$(rand(512))")
-  setstore!(ctx, "csrf_token", token)
+  setin_store!(ctx, "csrf_token", token)
   app(ctx)
 end
 
+function setin_cookie!(ctx, key, value)
+  error("Now working")
+end
+
+function getin_cookie(ctx, key, value)
+  error("Now working")
+end
 
 function setin_store!(ctx, key, value)
   !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
