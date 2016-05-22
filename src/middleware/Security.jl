@@ -37,11 +37,13 @@ function csrf(app, ctx)
 end
 
 function setin_cookie!(ctx, key, value)
-  error("Now working")
+  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
+  ctx[:cookies][key] = value
 end
 
-function getin_cookie(ctx, key, value)
-  error("Now working")
+function getin_cookie(ctx, key)
+  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
+  ctx[:cookies][key]
 end
 
 function setin_store!(ctx, key, value)
