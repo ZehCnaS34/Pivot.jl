@@ -6,7 +6,7 @@ function strtodict(str, delim)
   str = split(str, delim)
   str = map((kv) -> split(kv, "="), str)
   str = filter((l) -> length(l) > 1, str)
-  [ k => v for (k, v) in str ] |> Dict
+  [ k => v for (k, v) in str ]
 end
 
 function body_todict(app, ctx)
@@ -31,9 +31,9 @@ function cookie_todict(app, ctx)
   cookie = strtodict(dough, "; ")
   ctx[:cookies] = cookie
   resp = app(ctx)
-  # ctx should be populated with new cookies
-  # at this point
-
+  for (k, v) in ctx[:cookies]
+    resp.cookies[string(k)] = Cookie(k, v)
+  end
   return resp
 end
 

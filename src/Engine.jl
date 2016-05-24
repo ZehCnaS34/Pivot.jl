@@ -56,9 +56,9 @@ end
 
 runs the server
 """
-function run(e::Engine, port::Number=8080; keyspath="")
+function run(e::Engine, port::Number=8080; keyspath="", reference=Dict(:server=>nothing))
   Pivot.finalize!(e)
-  http = HttpHandler() do req::Request, res::Response
+  reference[:http] = HttpHandler() do req::Request, res::Response
     # need to parse the path
     ctx = Dict{Symbol, Any}()
     rq = req |> Mux.todict |> Pivot.splitquery
@@ -67,7 +67,7 @@ function run(e::Engine, port::Number=8080; keyspath="")
     mux(e.router.middleware, buildhandler(e.router))(ctx)
   end
 
-  server = Server(http)
+  server = Server(reference[:http])
 
   # ssl for https
   # TODO: test remotely
