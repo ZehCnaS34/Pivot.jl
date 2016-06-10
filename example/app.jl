@@ -1,6 +1,9 @@
 using Pivot
 import Pivot: Static, Filter, Security
-import Security: setin_store!, getin_store
+import Security: setin_store!, getin_store,
+setin_cookie!, getin_cookie,
+
+
 
 # Setting up a relative directory for a home path
 appdir = @__FILE__() |> abspath |> dirname
@@ -29,6 +32,7 @@ handle!(app, GET, "/") do ctx
     Static.render(ctx, "index.html")
 end
 
+# SESSIONS ---------------------------------------------------------------------
 handle!(app, GET, "/:name") do ctx
     name = ctx[:params]["name"]
     try
@@ -44,6 +48,26 @@ handle!(app, POST, "/:name") do ctx
     setin_store!(ctx, name, value)
     getin_store(ctx, name)
 end
+# ------------------------------------------------------------------------------
+
+# COOKIES ----------------------------------------------------------------------
+handle!(app, GET, "/cookie/:name") do ctx
+    name = ctx[:params]["name"]
+    try
+        getin_cookie(ctx, name)
+    catch
+        "No key in store with id $name"
+    end
+end
+
+handle!(app, POST, "/cookie/:name") do ctx
+    name = ctx[:params]["name"]
+    value = ctx[:query]["value"]
+    setin_cookie!(ctx, name, value)
+    getin_cookie(ctx, name)
+end
+# ------------------------------------------------------------------------------
+
 
 handle!(app, GET, "/awesome") do ctx
     ctx[:awesome]
