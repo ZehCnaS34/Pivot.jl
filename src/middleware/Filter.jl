@@ -1,7 +1,17 @@
+"""
+Filter contains middleware that is able to mutate the request map.
+These functions are most commonly used to make accessing data from the request more simple and straight forward.
+"""
 module Filter
+
 using HttpServer
 import HttpCommon: Cookie
 
+"""
+# strtodict
+
+converts
+"""
 function strtodict(str, delim)
   str = split(str, delim)
   str = map((kv) -> split(kv, "="), str)
@@ -9,8 +19,17 @@ function strtodict(str, delim)
   [ k => v for (k, v) in str ]
 end
 
+"""
+# body_todict(app, ctx)
+
+Converts the query from the request to a dictionary. Then stores in to locations
+```julia
+ctx[:request][:data] ## overwriting the raw version
+ctx[:body] ## for convenience
+```
+"""
 function body_todict(app, ctx)
-  !in(:data, ctx[:request] |> keys) && begin
+  if !in(:data, ctx[:request] |> keys)
     ctx[:data] = Dict()
     return app(ctx)
   end
@@ -21,8 +40,17 @@ function body_todict(app, ctx)
 end
 
 
+"""
+# body_todict(app, ctx)
+
+Converts the query from the request to a dictionary. Then stores in to locations
+```julia
+ctx[:request][:cookie] ## overwriting the raw version
+ctx[:cookie] ## for convenience
+```
+"""
 function cookie_todict(app, ctx)
-  !in("Cookie", ctx[:request][:headers] |> keys) && begin
+  if !in("Cookie", keys(ctx[:request][:headers]))
     ctx[:cookies] = Dict()
     resp = app(ctx)
     return resp
@@ -31,6 +59,8 @@ function cookie_todict(app, ctx)
   cookie = strtodict(dough, "; ")
   ctx[:cookies] = cookie
   resp = app(ctx)
+
+  # adding new cookies added from the handler to the response
   for (k, v) in ctx[:cookies]
     resp.cookies[string(k)] = Cookie(k, v)
   end
@@ -41,17 +71,17 @@ end
 # query_todict
 
 Converts the query from the request to a dictionary. Then stores in to locations
-ctx[:request][:query] -- overwriting the raw version
-ctx[:query] -- for convenience
+```julia
+ctx[:request][:query] ## overwriting the raw version
+ctx[:query] ## for convenience
+```
 """
-function query_todict(key_type=string)
-  function (app, ctx)
-    raw_query = ctx[:request][:query]
-    marshalled = strtodict(raw_query, "&")
-    ctx[:request][:query] = marshalled
-    ctx[:query] = marshalled
-    app(ctx)
-  end
+function query_todict(app, ctx)
+  raw_query = ctx[:request][:query]
+  marshalled = strtodict(raw_query, "&")
+  ctx[:request][:query] = marshalled
+  ctx[:query]           = marshalled
+  app(ctx)
 end
 
 end

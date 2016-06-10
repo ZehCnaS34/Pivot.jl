@@ -11,11 +11,19 @@ const STI = Dict(
   "PUT"    =>  PUT,
   "POST"   =>  POST,
   "DELETE" =>  DELETE,
-  "PATCH"  =>  PATCH
+  "PATCH"  =>  PATCH,
+  "get"    =>  GET,
+  "put"    =>  PUT,
+  "post"   =>  POST,
+  "delete" =>  DELETE,
+  "patch"  =>  PATCH
 )
 
 """
+# proper_method
+
 for cases when an endpoint can many different verbs
+first check if there is an exact match simpler
 """
 function proper_method(verb, map)
   in(verb, map |> keys) && return map[verb]
@@ -24,5 +32,5 @@ function proper_method(verb, map)
     verb & v > 0 && return map[v]
   end
 
-  return nothing
+  throw("No key $verb in map.")
 end

@@ -16,7 +16,6 @@ function session()
     ctx[:cookies]["PIVOTSESSIONID"] = if in(ctx[:cookies]["PIVOTSESSIONID"], sessionstore |> keys)
       Cookie("PIVOTSESSIONID", ctx[:cookies]["PIVOTSESSIONID"]).value
     else
-      # ehhhh lol
       sessionid = hexdigest("sha256", "create-session$(rand(512))")
       sessionstore[sessionid] = Dict{Any, Any}()
       sessionid
@@ -36,28 +35,36 @@ function csrf(app, ctx)
   app(ctx)
 end
 
-function setin_cookie!(ctx, key, value)
+function withcookie(fn, ctx)
   !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
-  ctx[:cookies][key] = value
+  fn()
 end
 
+
+function setin_cookie!(ctx, key, value)
+  withcookie(ctx) do
+    ctx[:cookies][key] = value
+  end
+end
 function getin_cookie(ctx, key)
-  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
-  ctx[:cookies][key]
+  withcookie(ctx) do
+    ctx[:cookies][key]
+  end
 end
 
 function setin_store!(ctx, key, value)
-  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
-  !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
-  sessionid = ctx[:cookies]["PIVOTSESSIONID"]
-  ctx[:store][sessionid][key] = value
+  withcookie(ctx) do
+    !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
+    sessionid = ctx[:cookies]["PIVOTSESSIONID"]
+    ctx[:store][sessionid][key] = value
+  end
 end
-
 function getin_store(ctx, key)
-  !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
-  !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
-  sessionid = ctx[:cookies]["PIVOTSESSIONID"]
-  ctx[:store][sessionid][key]
+  withcookie(ctx) do
+    !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
+    sessionid = ctx[:cookies]["PIVOTSESSIONID"]
+    ctx[:store][sessionid][key]
+  end
 end
 
 end

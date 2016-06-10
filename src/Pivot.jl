@@ -5,6 +5,7 @@ using MbedTLS, Mux, HttpServer
 
 export Endpoint,
   Router,
+  TRouter,
   Engine,
   Routing,
   handle!,
@@ -26,5 +27,6 @@ include("Router.jl")
 include("Engine.jl")
 include("Rendering.jl")
 include("Routing.jl")
+include("TRouter.jl")
 
 end # module
