@@ -1,7 +1,6 @@
 using Pivot
 import Pivot: Static, Filter, Security
-import Security: setin_store!, getin_store,
-setin_cookie!, getin_cookie,
+import Security: setin_store!, getin_store, setin_cookie!, getin_cookie,
 
 
 
@@ -18,7 +17,7 @@ use!(app, Filter.cookie_todict)
 use!(app, Filter.body_todict)
 use!(app, Filter.query_todict)
 use!(app, Security.session())
-# customer middleware
+# custom middleware
 use!(app) do app, ctx
     # lets do something to the context
     ctx[:awesome] = "Totally"
@@ -31,6 +30,8 @@ end
 handle!(app, GET, "/") do ctx
     Static.render(ctx, "index.html")
 end
+
+
 
 # SESSIONS ---------------------------------------------------------------------
 handle!(app, GET, "/:name") do ctx
@@ -49,6 +50,8 @@ handle!(app, POST, "/:name") do ctx
     getin_store(ctx, name)
 end
 # ------------------------------------------------------------------------------
+
+
 
 # COOKIES ----------------------------------------------------------------------
 handle!(app, GET, "/cookie/:name") do ctx
@@ -69,8 +72,10 @@ end
 # ------------------------------------------------------------------------------
 
 
+
 handle!(app, GET, "/awesome") do ctx
     ctx[:awesome]
 end
+
 
 Pivot.run(app, 8080)
