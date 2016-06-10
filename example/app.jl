@@ -1,7 +1,6 @@
 using Pivot
 import Pivot: Static, Filter, Security
-import Security: setin_store!, getin_store, setin_cookie!, getin_cookie,
-
+import Security: setin_store!, getin_store, setin_cookie!, getin_cookie
 
 
 # Setting up a relative directory for a home path

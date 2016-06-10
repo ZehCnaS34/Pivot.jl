@@ -1,4 +1,4 @@
-using URIParser, MbedTLS
+using URIParser, MbedTLS, WebSockets
 
 """
 # Engine
@@ -57,7 +57,15 @@ function run(e::Engine, port::Number=8080; keyspath="", reference=Dict())
         mux(e.router.middleware, buildhandler(e.router))(ctx)
     end
 
-    reference[:server] = Server(reference[:http])
+    reference[:socket] = WebSocketHandler() do req, client
+        while true
+            msg = read(client) |> utf8
+            write(client, msg)
+        end
+    end
+
+    reference[:server] = Server(reference[:http],
+                                reference[:socket])
 
     # ssl for https
     # TODO: test remotely
