@@ -94,6 +94,6 @@ fetch(r::TRouter, tokens::Vector) = r.root[deepcopy(tokens), Dict()]
 
 just calls the finalize method that is provided by endpoint
 """
-finalize!(r::TRouter) = finalize!(router.root)
+finalize!(r::TRouter) = finalize!(r.root)
 
 # TRouter specific helper functions

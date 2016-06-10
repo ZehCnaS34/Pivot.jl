@@ -4,7 +4,7 @@ using URIParser, MbedTLS
 # Engine
 """
 type Engine
-    router
+    router::Router
 end
 
 # right now, I'll just use the default Mux
@@ -47,7 +47,7 @@ end
 runs the server
 """
 function run(e::Engine, port::Number=8080; keyspath="", reference=Dict())
-    Pivot.finalize!(e.root)
+    Pivot.finalize!(e.router)
     reference[:http] = HttpHandler() do req::Request, res::Response
         # need to parse the path
         ctx = Dict{Symbol, Any}() # building the context
