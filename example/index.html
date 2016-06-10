@@ -1,9 +1,18 @@
 <html>
   <head>
     <title>Example Application</title>
-    <script src="app.js"></script>
+    <!-- <script src="app.js"></script> -->
   </head>
   <body>
     <h2>This is awesome</h2>
+
+    <form method="post" action="/person">
+        {{name}}
+        <input type="text" name="name" placeholder="name" />
+        <input type="text" name="age" placeholder="age" />
+        <input type="text" name="csrf_token" value="{{csrf_token}}" placeholder="age" />
+
+        <button type="submit">New Person</button>
+    </form>
   </body>
 </html>

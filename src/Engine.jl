@@ -22,6 +22,7 @@ handle!(e::Engine,
 
 use!(e::Engine, fn::Function) = use!(e.router, fn)
 use!(fn::Function, e::Engine) = use!(e.router, fn)
+use!(e::Engine, fns::Function...) = map((fn) -> use!(e, fn), fns)
 
 
 """
