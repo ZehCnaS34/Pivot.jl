@@ -9,11 +9,3 @@ using Base.Test
 @test PATCH == 16
 
 @test GET + POST == GET | POST == 5
-
-root = StaticEndpoint()
-@test Pivot.buildtree([]).tag == root.tag
-
-# learning
-@action index(conn) begin
-    @> conn render("index.html")
-end

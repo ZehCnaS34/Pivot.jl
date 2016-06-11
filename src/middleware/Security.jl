@@ -4,6 +4,7 @@ import HttpCommon: Cookie
 
 function secret(token)
     function (app, ctx)
+        ctx[:secret] = token
         app(ctx)
     end
 end
