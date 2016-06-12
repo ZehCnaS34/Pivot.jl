@@ -48,6 +48,8 @@ function csrf(app, ctx)
     app(ctx)
 end
 
+iscsrfvalid(ctx) = getin_store(ctx, "csrf_token") == ctx[:query]["csrf_token"]
+
 function withcookie(fn, ctx)
     !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
     fn()

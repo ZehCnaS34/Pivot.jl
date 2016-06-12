@@ -1,6 +1,20 @@
 import Base.fetch
 abstract Router
 
+
+macro namespace(path, block)
+    block.head != :block && error("Second arg is not a block")
+    bargs = map(block.args) do line
+        if line.args[1] == :handle!
+            line.args[5] = path * line.args[5]
+        end
+        esc(line)
+    end
+
+    block.args = bargs
+    block
+end
+
 """
 # Mount
 takes one routing tree `r2` and attaches it to another routing tree `r1`
