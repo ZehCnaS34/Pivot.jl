@@ -1,0 +1,5 @@
+module Storage
+
+# session
+
+end
