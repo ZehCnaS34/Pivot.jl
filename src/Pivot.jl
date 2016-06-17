@@ -21,12 +21,11 @@ export Endpoint,
 # package code goes here
 include("verbs.jl")
 include("utils.jl")
-include("Context.jl")
-include("middleware.jl")
 include("Endpoint.jl")
 include("Router.jl")
+include("Context.jl")
+include("middleware.jl")
 include("Engine.jl")
-include("Rendering.jl")
 include("Routing.jl")
 include("TRouter.jl")
 

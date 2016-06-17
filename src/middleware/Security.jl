@@ -24,7 +24,7 @@ end
 
 # MIDDLEWARE -------------------------------------------------------------------
 function session()
-    sessionstore = Dict{Any, Dict}()
+    sessionstore = Dict{AbstractString, Dict}()
     function (app, ctx)
         ctx.data[:store] = sessionstore
         ctx.data[:cookies]["PIVOTSESSIONID"] = (!in("PIVOTSESSIONID", keys(ctx.data[:cookies]))) ? "" : ctx.data[:cookies]["PIVOTSESSIONID"]

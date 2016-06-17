@@ -87,4 +87,9 @@ function query_todict(app::Function, ctx)
   app(ctx)
 end
 
+function mime!(ctx, value::AbstractString)
+    ctx.response.headers["Content-Type"] = value * "; charset=utf-8"
+
+end
+
 end

@@ -1,4 +1,5 @@
 include("middleware/Static.jl")
+include("middleware/Rendering.jl")
 include("middleware/Storage.jl")
 include("middleware/Filter.jl")
 include("middleware/Logging.jl")
