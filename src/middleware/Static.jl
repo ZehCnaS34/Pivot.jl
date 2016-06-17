@@ -9,7 +9,7 @@ Defines the proper variables for the template home
 """
 function template(template_directory)
     function (app, ctx)
-        ctx[:template_dir] = abspath(template_directory)
+        ctx.data[:template_dir] = abspath(template_directory)
         app(ctx)
     end
 end
@@ -23,16 +23,14 @@ function mime(s)
 end
 
 
-
-
 """
 # public serve some static files?
 """
 function public(public_directory)
     function (app, ctx)
-        ctx[:public_dir] = public_directory
+        ctx.data[:public_dir] = public_directory
         resourcefile = joinpath(public_directory,
-                                join(ctx[:request][:path], "/")) |> abspath
+                                join(ctx.data[:request][:path], "/")) |> abspath
 
         if isfile(resourcefile)
             ext = split(resourcefile |> basename, ".")[end]
@@ -53,7 +51,7 @@ end
 for this to work, you need to have the public middleware installed
 """
 function favicon(app, ctx)
-    if join(ctx[:request][:path], "/") == "favicon.ico"
+    if join(ctx.data[:request][:path], "/") == "favicon.ico"
         return "awesome" # this should be the location of a favicon
     end
 
@@ -70,7 +68,7 @@ should render a file as a request
 later on, I should deff cache this
 """
 function render(ctx, filename, data=Dict())
-    template_location = ctx[:template_dir]
+    template_location = ctx.data[:template_dir]
     f = open(joinpath(template_location, filename))
     content = join(readlines(f), "")
     close(f)

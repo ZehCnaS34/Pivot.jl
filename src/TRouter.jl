@@ -2,13 +2,53 @@ import Base.fetch
 
 export TRouter
 
+mux_css = """
+  body { font-family: sans-serif; padding:50px; }
+  .box { background: #fcfcff; padding:20px; border: 1px solid #ddd; border-radius:5px; }
+  pre { line-height:1.5 }
+  a { text-decoration:none; color:#225; }
+  a:hover { color:#336; }
+  u { cursor: pointer }
+  """
+
+error_phrases = ["Looks like someone needs to pay their developers more."
+                 "Someone order a thousand more monkeys! And a million more typewriters!"
+                 "Maybe it's time for some sleep?"
+                 "Don't bother debugging this one – it's almost definitely a quantum thingy."
+                 "It probably won't happen again though, right?"
+                 "F5! F5! F5!"
+                 "F5! F5! FFS!"
+                 "On the bright side, nothing has exploded. Yet."
+                 "If this error has frustrated you, try clicking <u>here</u>."]
+
+"""
+# basiccatch
+
+support Pivot middleware.
+"""
+function basiccatch(app, ctx)
+    try
+        app(ctx)
+    catch e
+        io = IOBuffer()
+        println(io, "<style>", mux_css, "</style>")
+        println(io, "<h1>Internal Error</h1>")
+        println(io, "<p>$(error_phrases[rand(1:length(error_phrases))])</p>")
+        println(io, "<pre class=\"box\">")
+        showerror(io, e, catch_backtrace())
+        println(io, "</pre>")
+        ctx.response.status = 500
+        return takebuf_string(io)
+    end
+end
+
 """
 TRouter is the root of the tree
 """
 type TRouter <: Router
     root::Endpoint
     middleware::Function
-    TRouter() = new(StaticEndpoint(), Mux.basiccatch)
+    TRouter() = new(StaticEndpoint(), basiccatch)
 end
 
 """

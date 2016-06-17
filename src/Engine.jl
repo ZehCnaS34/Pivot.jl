@@ -34,9 +34,9 @@ This function fetched the proper endpoint, along with the proper handler, then p
 """
 function buildhandler(router::Router)
     function (ctx)
-        ep, params = fetch(router, ctx[:request][:path])
-        method = STI[ctx[:request][:method]]
-        ctx[:params] = params
+        ep, params = fetch(router, ctx.data[:request][:path])
+        method = STI[ctx.data[:request][:method]]
+        ctx.data[:params] = params
         ctx |> proper_method(method, ep.handlermap)
     end
 end
@@ -51,11 +51,14 @@ function run(e::Engine, port::Number=8080; keyspath="", reference=Dict())
     Pivot.finalize!(e.router)
     reference[:http] = HttpHandler() do req::Request, res::Response
         # need to parse the path
-        ctx = Dict{Symbol, Any}() # building the context
         rq = req |> Mux.todict |> Pivot.splitquery
-        ctx[:router] = e.router
-        ctx[:request] = rq
-        mux(e.router.middleware, buildhandler(e.router))(ctx)
+        ctx = Context(req)
+        ctx.data[:router] = e.router
+        ctx.data[:request] = rq
+        ctx.data[:reference] = reference
+        str_resp = mux(e.router.middleware, buildhandler(e.router))(ctx)
+        ctx.response.data = convert(Vector{UInt8}, str_resp)
+        Response(ctx)
     end
 
     reference[:socket] = WebSocketHandler() do req, client

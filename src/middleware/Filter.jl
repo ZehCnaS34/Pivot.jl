@@ -24,18 +24,18 @@ end
 
 Converts the query from the request to a dictionary. Then stores in to locations
 ```julia
-ctx[:request][:data] ## overwriting the raw version
-ctx[:body] ## for convenience
+ctx.data[:request][:data] ## overwriting the raw version
+ctx.data[:body] ## for convenience
 ```
 """
 function body_todict(app, ctx)
-  if !in(:data, ctx[:request] |> keys)
-    ctx[:data] = Dict()
+  if !in(:data, ctx.data[:request] |> keys)
+    ctx.data[:data] = Dict()
     return app(ctx)
   end
-  raw_data = convert(ASCIIString, ctx[:request][:data])
+  raw_data = convert(ASCIIString, ctx.data[:request][:data])
   data = strtodict(raw_data, "&")
-  ctx[:body] = data
+  ctx.data[:body] = data
   app(ctx)
 end
 
@@ -45,42 +45,45 @@ end
 
 Converts the query from the request to a dictionary. Then stores in to locations
 ```julia
-ctx[:request][:cookie] ## overwriting the raw version
-ctx[:cookie] ## for convenience
+ctx.data[:request][:cookie] ## overwriting the raw version
+ctx.data[:cookie] ## for convenience
 ```
 """
-function cookie_todict(app, ctx)
-  if !in("Cookie", keys(ctx[:request][:headers]))
-    ctx[:cookies] = Dict()
+function cookie_todict(app::Function, ctx)
+  if !in("Cookie", keys(ctx.data[:request][:headers]))
+    ctx.data[:cookies] = Dict()
     resp = app(ctx)
     return resp
   end
-  dough = ctx[:request][:headers]["Cookie"]
+  dough = ctx.data[:request][:headers]["Cookie"]
   cookie = strtodict(dough, "; ")
-  ctx[:cookies] = cookie
+  ctx.data[:cookies] = cookie
+
   resp = app(ctx)
 
   # adding new cookies added from the handler to the response
-  for (k, v) in ctx[:cookies]
-    resp.cookies[string(k)] = Cookie(k, v)
+  for (k, v) in ctx.data[:cookies]
+    ctx.response.cookies[string(k)] = Cookie(k, v)
   end
   return resp
 end
+
+
 
 """
 # query_todict
 
 Converts the query from the request to a dictionary. Then stores in to locations
 ```julia
-ctx[:request][:query] ## overwriting the raw version
-ctx[:query] ## for convenience
+ctx.data[:request][:query] ## overwriting the raw version
+ctx.data[:query] ## for convenience
 ```
 """
-function query_todict(app, ctx)
-  raw_query = ctx[:request][:query]
+function query_todict(app::Function, ctx)
+  raw_query = ctx.data[:request][:query]
   marshalled = strtodict(raw_query, "&")
-  ctx[:request][:query] = marshalled
-  ctx[:query]           = marshalled
+  ctx.data[:request][:query] = marshalled
+  ctx.data[:query]           = marshalled
   app(ctx)
 end
 

@@ -5,9 +5,9 @@ export redirect_to
 # TODO: make this DRY
 function redirect_to(ctx, route)
   path = split(route, "/", keep=false)
-  ep, params = fetch(ctx[:router], path)
-  method = Pivot.STI[ctx[:request][:method]]
-  ctx[:params] = params
+  ep, params = fetch(ctx.data[:router], path)
+  method = Pivot.STI[ctx.data[:request][:method]]
+  ctx.data[:params] = params
   ctx |> Pivot.proper_method(method, ep.handlermap)
 end
 

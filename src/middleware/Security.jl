@@ -2,26 +2,34 @@ module Security
 using HttpServer, Nettle
 import HttpCommon: Cookie
 
-function secret(token)
-    function (app, ctx)
-        ctx[:secret] = token
-        app(ctx)
-    end
+function withcookie(fn::Function, ctx)
+    !in(:cookies, ctx.data |> keys) && error("Cookies are not setup properly")
+    fn()
 end
 
-#  TODO: refactor
-"""
-# session
 
-Returns a middleware function. The middleware function creates a session store and attaches :store to the context
-"""
+# COOKIE GETTER AND SETTER -----------------------------------------------------
+function setin_cookie!(ctx, key, value)
+    withcookie(ctx) do
+        ctx.data[:cookies][key] = value
+    end
+end
+function getin_cookie(ctx, key)
+    withcookie(ctx) do
+        ctx.data[:cookies][key]
+    end
+end
+# ------------------------------------------------------------------------------
+
+
+# MIDDLEWARE -------------------------------------------------------------------
 function session()
     sessionstore = Dict{Any, Dict}()
     function (app, ctx)
-        ctx[:store] = sessionstore
-        ctx[:cookies]["PIVOTSESSIONID"] = (!in("PIVOTSESSIONID", keys(ctx[:cookies]))) ? "" : ctx[:cookies]["PIVOTSESSIONID"]
-        ctx[:cookies]["PIVOTSESSIONID"] = if in(ctx[:cookies]["PIVOTSESSIONID"], sessionstore |> keys)
-            Cookie("PIVOTSESSIONID", ctx[:cookies]["PIVOTSESSIONID"]).value
+        ctx.data[:store] = sessionstore
+        ctx.data[:cookies]["PIVOTSESSIONID"] = (!in("PIVOTSESSIONID", keys(ctx.data[:cookies]))) ? "" : ctx.data[:cookies]["PIVOTSESSIONID"]
+        ctx.data[:cookies]["PIVOTSESSIONID"] = if in(ctx.data[:cookies]["PIVOTSESSIONID"], sessionstore |> keys)
+            Cookie("PIVOTSESSIONID", ctx.data[:cookies]["PIVOTSESSIONID"]).value
         else
             sessionid = hexdigest("sha256", "create-session$(rand(512))")
             sessionstore[sessionid] = Dict{Any, Any}()
@@ -29,16 +37,42 @@ function session()
         end
 
         resp = app(ctx)
-        resp = Response(resp)
-        resp.cookies["PIVOTSESSIONID"] = Cookie("PIVOTSESSIONID", ctx[:cookies]["PIVOTSESSIONID"])
+        ctx.response.cookies["PIVOTSESSIONID"] = Cookie("PIVOTSESSIONID", ctx.data[:cookies]["PIVOTSESSIONID"])
         resp
     end
 end
+# ------------------------------------------------------------------------------
+
+
+# STORE GETTER AND SETTER -----------------------------------------------------
+function setin_store!(ctx, key, value)
+    withcookie(ctx) do
+        !in("PIVOTSESSIONID", ctx.data[:cookies] |> keys) && error("The session id was not setup properly")
+        sessionid = ctx.data[:cookies]["PIVOTSESSIONID"]
+        ctx.data[:store][sessionid][key] = value
+    end
+end
+function getin_store(ctx, key)
+    withcookie(ctx) do
+        !in("PIVOTSESSIONID", ctx.data[:cookies] |> keys) && error("The session id was not setup properly")
+        sessionid = ctx.data[:cookies]["PIVOTSESSIONID"]
+        ctx.data[:store][sessionid][key]
+    end
+end
+# -----------------------------------------------------------------------------
+
+function secret(token)
+    function (app, ctx)
+        ctx.data[:secret] = token
+        app(ctx)
+    end
+end
+
 
 # Does not work
 function csrf(app, ctx)
-    if ctx[:request][:method] == "POST"
-        @show ctx[:body]["csrf_token"] == getin_store(ctx, "csrf_token")
+    if ctx.data[:request][:method] == "POST"
+        @show ctx.data[:body]["csrf_token"] == getin_store(ctx, "csrf_token")
         return app(ctx)
     end
 
@@ -48,38 +82,6 @@ function csrf(app, ctx)
     app(ctx)
 end
 
-iscsrfvalid(ctx) = getin_store(ctx, "csrf_token") == ctx[:query]["csrf_token"]
-
-function withcookie(fn, ctx)
-    !in(:cookies, ctx |> keys) && error("Cookies are not setup properly")
-    fn()
-end
-
-
-function setin_cookie!(ctx, key, value)
-    withcookie(ctx) do
-        ctx[:cookies][key] = value
-    end
-end
-function getin_cookie(ctx, key)
-    withcookie(ctx) do
-        ctx[:cookies][key]
-    end
-end
-
-function setin_store!(ctx, key, value)
-    withcookie(ctx) do
-        !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
-        sessionid = ctx[:cookies]["PIVOTSESSIONID"]
-        ctx[:store][sessionid][key] = value
-    end
-end
-function getin_store(ctx, key)
-    withcookie(ctx) do
-        !in("PIVOTSESSIONID", ctx[:cookies] |> keys) && error("The session id was not setup properly")
-        sessionid = ctx[:cookies]["PIVOTSESSIONID"]
-        ctx[:store][sessionid][key]
-    end
-end
+iscsrfvalid(ctx) = getin_store(ctx, "csrf_token") == ctx.data[:body]["csrf_token"]
 
 end

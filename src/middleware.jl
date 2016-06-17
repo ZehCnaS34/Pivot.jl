@@ -1,4 +1,5 @@
-include("middleware/Security.jl")
+include("middleware/Static.jl")
+include("middleware/Storage.jl")
 include("middleware/Filter.jl")
 include("middleware/Logging.jl")
-include("middleware/Static.jl")
+include("middleware/Security.jl")

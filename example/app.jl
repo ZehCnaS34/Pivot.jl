@@ -23,7 +23,7 @@ use!(app,
 # custom middleware
 use!(app) do app, ctx
     # lets do something to the context
-    ctx[:awesome] = "Totally"
+    ctx.data[:awesome] = "Totally"
     app(ctx)
 end
 # ------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ end
 
 # SESSIONS ---------------------------------------------------------------------
 handle!(app, GET, "/:name") do ctx
-    name = ctx[:params]["name"]
+    name = ctx.data[:params]["name"]
     try
         getin_store(ctx, name)
     catch
@@ -49,8 +49,8 @@ handle!(app, GET, "/:name") do ctx
 end
 
 handle!(app, POST, "/:name") do ctx
-    name = ctx[:params]["name"]
-    value = ctx[:query]["value"]
+    name = ctx.data[:params]["name"]
+    value = ctx.data[:query]["value"]
     setin_store!(ctx, name, value)
     getin_store(ctx, name)
 end
@@ -60,7 +60,7 @@ end
 
 # COOKIES ----------------------------------------------------------------------
 handle!(app, GET, "/cookie/:name") do ctx
-    name = ctx[:params]["name"]
+    name = ctx.data[:params]["name"]
     try
         getin_cookie(ctx, name)
     catch
@@ -69,8 +69,8 @@ handle!(app, GET, "/cookie/:name") do ctx
 end
 
 handle!(app, POST, "/cookie/:name") do ctx
-    name = ctx[:params]["name"]
-    value = ctx[:query]["value"]
+    name = ctx.data[:params]["name"]
+    value = ctx.data[:query]["value"]
     setin_cookie!(ctx, name, value)
     getin_cookie(ctx, name)
 end
@@ -88,7 +88,7 @@ end
 
 
 handle!(app, GET, "/awesome") do ctx
-    ctx[:awesome]
+    ctx.data[:awesome]
 end
 
 

@@ -1,11 +1,9 @@
 type Context
     request::Request
     response::Response
-    data::Dict{Symbol, AbstractString}
+    data::Dict{Any, Any}
+    Context(req::Request) = new(req, Response(), Dict{Any, Any}())
 end
-
-Context(req::Request) = Context(req, Response(), Dict{Symbol, AbstractString}())
-
 
 """
 # Response(::Context)
