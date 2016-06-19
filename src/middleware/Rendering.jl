@@ -40,4 +40,10 @@ function markdown(ctx, file, data=Dict(); isfile=true)
     md |> Markdown.parse |> Markdown.html
 end
 
+
+function json(ctx, data)
+    mime!(ctx, "application/json")
+    JSON.json(data)
+end
+
 end

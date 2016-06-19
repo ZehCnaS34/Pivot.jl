@@ -6,12 +6,12 @@
 - [ ] Find Julia ORM (BDI)
   - [ ] Integrate DBI into Pivot
 - [x] Simple Session Management
-- [ ] Cookies
+- [x] Cookies
   - [x] Cookie middleware
-  - [ ] api to insert cookies into the response
-  - [ ] api to parse cookies from response
+  - [x] api to insert cookies into the response
+  - [x] api to parse cookies from response
 - [ ]  Security
-  - [ ] CSFR
+  - [x] CSFR
 - [ ] Support HTTPS
   - [ ] test remotely
   - [x] setup simple folder structure for ssl keys

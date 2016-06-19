@@ -77,7 +77,7 @@ todict converts any type passed and returns a dict
 """
 function todict(typ)
     output = Dict()
-    for field in fieldnames(typ)
+    for field in fieldname(typ)
         output[field] = @field typ field
     end
     output
@@ -105,6 +105,8 @@ end
 
 attaches the handler::Function to the handlemap contained on the leaf endpoint
 of the path.
+
+handle! must return the handler function
 """
 function handle!(fn::Handler,
                  ep::Endpoint,
