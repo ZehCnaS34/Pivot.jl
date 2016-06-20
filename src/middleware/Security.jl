@@ -10,54 +10,75 @@ end
 
 # COOKIE GETTER AND SETTER -----------------------------------------------------
 function setin_cookie!(ctx, key, value)
-    withcookie(ctx) do
-        ctx.data[:cookies][key] = value
-    end
+    # adding new cookies added from the handler to the response
+    ctx.data[:cookies][key] = value
+    ctx.response.cookies[string(key)] = Cookie(key, value)
 end
 function getin_cookie(ctx, key)
-    withcookie(ctx) do
-        ctx.data[:cookies][key]
-    end
+    ctx.data[:cookies][key]
 end
 # ------------------------------------------------------------------------------
 
 
+function get_sessionid(ctx)
+    if ("PIVOTSESSIONID" in  keys(ctx.data[:cookies]))
+        ctx.data[:cookies]["PIVOTSESSIONID"]
+    else
+        ""
+    end
+end
+
+
+function gen_sessionid(fn, ctx)
+    if fn(getin_cookie(ctx, "PIVOTSESSIONID"))
+        getin_cookie(ctx, "PIVOTSESSIONID")
+    else
+        sessionid = hexdigest("sha256", "create-session$(rand(512))")
+        sessionid
+    end
+end
+
+# just a little dict helper
+function setifnothing(dict, key, value)
+    if key in keys(dict)
+        dict[key]
+    else
+        dict[key] = value
+    end
+end
+
+
 # MIDDLEWARE -------------------------------------------------------------------
+"""
+# session
+
+creates a closure, that acts as a session store.
+"""
 function session()
     sessionstore = Dict{AbstractString, Dict}()
     function (app, ctx)
-        ctx.data[:store] = sessionstore
-        ctx.data[:cookies]["PIVOTSESSIONID"] = (!in("PIVOTSESSIONID", keys(ctx.data[:cookies]))) ? "" : ctx.data[:cookies]["PIVOTSESSIONID"]
-        ctx.data[:cookies]["PIVOTSESSIONID"] = if in(ctx.data[:cookies]["PIVOTSESSIONID"], sessionstore |> keys)
-            Cookie("PIVOTSESSIONID", ctx.data[:cookies]["PIVOTSESSIONID"]).value
-        else
-            sessionid = hexdigest("sha256", "create-session$(rand(512))")
-            sessionstore[sessionid] = Dict{Any, Any}()
-            sessionid
+        setin_cookie!(ctx, "PIVOTSESSIONID", get_sessionid(ctx))
+
+        sessionid = gen_sessionid(ctx) do id
+          id in keys(sessionstore)
         end
 
-        resp = app(ctx)
-        ctx.response.cookies["PIVOTSESSIONID"] = Cookie("PIVOTSESSIONID", ctx.data[:cookies]["PIVOTSESSIONID"])
-        resp
+        setifnothing(sessionstore, sessionid, Dict{Any, Any}())
+
+        ctx.data[:session] = sessionstore[sessionid]
+        setin_cookie!(ctx, "PIVOTSESSIONID", sessionid)
+        app(ctx)
     end
 end
 # ------------------------------------------------------------------------------
 
 
 # STORE GETTER AND SETTER -----------------------------------------------------
-function setin_store!(ctx, key, value)
-    withcookie(ctx) do
-        !in("PIVOTSESSIONID", ctx.data[:cookies] |> keys) && error("The session id was not setup properly")
-        sessionid = ctx.data[:cookies]["PIVOTSESSIONID"]
-        ctx.data[:store][sessionid][key] = value
-    end
+function setin_session!(ctx, key, value)
+    ctx.data[:session][key] = value
 end
-function getin_store(ctx, key)
-    withcookie(ctx) do
-        !in("PIVOTSESSIONID", ctx.data[:cookies] |> keys) && error("The session id was not setup properly")
-        sessionid = ctx.data[:cookies]["PIVOTSESSIONID"]
-        ctx.data[:store][sessionid][key]
-    end
+function getin_session(ctx, key)
+    ctx.data[:session][key]
 end
 # -----------------------------------------------------------------------------
 
