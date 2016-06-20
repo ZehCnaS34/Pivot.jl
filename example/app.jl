@@ -1,6 +1,6 @@
 using Pivot
 import Pivot: Static, Filter, Security, Logger
-import Security: setin_store!, getin_store, setin_cookie!, getin_cookie
+import Security: setin_session!, getin_session, setin_cookie!, getin_cookie
 
 
 # Setting up a relative directory for a home path
@@ -33,7 +33,7 @@ end
 handle!(app, GET, "/") do ctx
     Static.render(ctx, "index.html",
                   Dict("name"       => "alexander",
-                       "csrf_token" => getin_store(ctx, "csrf_token")))
+                       "csrf_token" => getin_session(ctx, "csrf_token")))
 end
 
 
@@ -42,17 +42,17 @@ end
 handle!(app, GET, "/:name") do ctx
     name = ctx.data[:params]["name"]
     try
-        getin_store(ctx, name)
+        getin_session(ctx, name)
     catch
-        "No key in store with id $name"
+        "No key in session with id $name"
     end
 end
 
 handle!(app, POST, "/:name") do ctx
     name = ctx.data[:params]["name"]
     value = ctx.data[:query]["value"]
-    setin_store!(ctx, name, value)
-    getin_store(ctx, name)
+    setin_session!(ctx, name, value)
+    getin_session(ctx, name)
 end
 # ------------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ handle!(app, GET, "/cookie/:name") do ctx
     try
         getin_cookie(ctx, name)
     catch
-        "No key in store with id $name"
+        "No key in session with id $name"
     end
 end
 

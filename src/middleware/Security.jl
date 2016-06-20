@@ -93,16 +93,16 @@ end
 # Does not work
 function csrf(app, ctx)
     if ctx.data[:request][:method] == "POST"
-        @show ctx.data[:body]["csrf_token"] == getin_store(ctx, "csrf_token")
+        @show ctx.data[:body]["csrf_token"] == getin_session(ctx, "csrf_token")
         return app(ctx)
     end
 
     token = hexdigest("sha256", "create-session$(rand(512))")
     println("Storing token $token")
-    setin_store!(ctx, "csrf_token", token)
+    setin_session!(ctx, "csrf_token", token)
     app(ctx)
 end
 
-iscsrfvalid(ctx) = getin_store(ctx, "csrf_token") == ctx.data[:body]["csrf_token"]
+iscsrfvalid(ctx) = getin_session(ctx, "csrf_token") == ctx.data[:body]["csrf_token"]
 
 end
