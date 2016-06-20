@@ -12,7 +12,7 @@ end
 function setin_cookie!(ctx, key, value)
     # adding new cookies added from the handler to the response
     ctx.data[:cookies][key] = value
-    ctx.response.cookies[string(key)] = Cookie(key, value)
+    ctx.response.cookies[string(key)] = Cookie(string(key), value)
 end
 function getin_cookie(ctx, key)
     ctx.data[:cookies][key]
@@ -60,7 +60,7 @@ function session()
         setin_cookie!(ctx, "PIVOTSESSIONID", get_sessionid(ctx))
 
         sessionid = gen_sessionid(ctx) do id
-          id in keys(sessionstore)
+            id in keys(sessionstore)
         end
 
         setifnothing(sessionstore, sessionid, Dict{Any, Any}())
