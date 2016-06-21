@@ -13,10 +13,22 @@ import HttpCommon: Cookie
 converts
 """
 function strtodict(str, delim)
-  str = split(str, delim)
-  str = map((kv) -> split(kv, "="), str)
-  str = filter((l) -> length(l) > 1, str)
-  [ k => v for (k, v) in str ]
+    str = split(str, delim)
+    str = map((kv) -> split(kv, "="), str)
+    str = filter((l) -> length(l) > 1, str)
+    [ strip(k) => v for (k, v) in str ]
+end
+
+
+function parse_multipart(raw, boundary)
+    println(raw)
+    raw = convert(ASCIIString, raw)
+    raw = split(raw, "\r\n")
+    raw = map(strip, raw)
+    raw = map((kv) -> split(kv, boundary), raw)
+    # str = filter((l) -> length(l) > 1, str)
+    println(raw)
+    [ strip(k) => v for (k, v) in raw ]
 end
 
 """
@@ -29,14 +41,53 @@ ctx.data[:body] ## for convenience
 ```
 """
 function body_todict(app, ctx)
-  if !in(:data, ctx.data[:request] |> keys)
-    ctx.data[:data] = Dict()
-    return app(ctx)
-  end
-  raw_data = convert(ASCIIString, ctx.data[:request][:data])
-  data = strtodict(raw_data, "&")
-  ctx.data[:body] = data
-  app(ctx)
+    if !in(:data, ctx.data[:request] |> keys)
+        ctx.data[:data] = Dict()
+        return app(ctx)
+    end
+
+    if :type in keys(ctx.data[:contenttype])
+        if ctx.data[:contenttype][:type] != "multipart"
+            raw_data = convert(ASCIIString, ctx.data[:request][:data])
+            data = strtodict(raw_data, "&")
+            ctx.data[:body] = data
+            return app(ctx)
+        else # TODO: find a better way to parse multipart
+            boundary = ctx.data[:contenttype][:parameters]["boundary"]
+            println(boundary)
+            raw_data = convert(ASCIIString, ctx.data[:request][:data])
+            data = parse_multipart(raw_data, boundary)
+            ctx.data[:body] = data
+            return app(ctx)
+        end
+    end
+
+    raw_data = convert(ASCIIString, ctx.data[:request][:data])
+    data = strtodict(raw_data, "&")
+    ctx.data[:body] = data
+    app(ctx)
+end
+
+
+function contenttype_todict(app, ctx)
+    if !in("Content-Type", ctx.data[:request][:headers] |> keys)
+        ctx.data[:contenttype] = Dict()
+        return app(ctx)
+    end
+
+    ct = Dict()
+
+    raw_data = convert(ASCIIString, ctx.data[:request][:headers]["Content-Type"])
+    parts = split(raw_data, ";")
+    ct[:parameters] = length(parts) > 1 ?
+        strtodict(parts[2], ";") :
+        Dict()
+
+    types                  = split(parts[1], "/")
+    ct[:type]              = types[1]
+    ct[:subtype]           = types[2]
+    ctx.data[:contenttype] = ct
+    app(ctx)
 end
 
 
@@ -50,22 +101,22 @@ ctx.data[:cookie] ## for convenience
 ```
 """
 function cookie_todict(app::Function, ctx)
-  if !in("Cookie", keys(ctx.data[:request][:headers]))
-    ctx.data[:cookies] = Dict()
+    if !in("Cookie", keys(ctx.data[:request][:headers]))
+        ctx.data[:cookies] = Dict()
+        resp = app(ctx)
+        return resp
+    end
+    dough = ctx.data[:request][:headers]["Cookie"]
+    cookie = strtodict(dough, "; ")
+    ctx.data[:cookies] = cookie
+
     resp = app(ctx)
+
+    # adding new cookies added from the handler to the response
+    for (k, v) in ctx.data[:cookies]
+        ctx.response.cookies[string(k)] = Cookie(k, v)
+    end
     return resp
-  end
-  dough = ctx.data[:request][:headers]["Cookie"]
-  cookie = strtodict(dough, "; ")
-  ctx.data[:cookies] = cookie
-
-  resp = app(ctx)
-
-  # adding new cookies added from the handler to the response
-  for (k, v) in ctx.data[:cookies]
-    ctx.response.cookies[string(k)] = Cookie(k, v)
-  end
-  return resp
 end
 
 
@@ -80,11 +131,11 @@ ctx.data[:query] ## for convenience
 ```
 """
 function query_todict(app::Function, ctx)
-  raw_query = ctx.data[:request][:query]
-  marshalled = strtodict(raw_query, "&")
-  ctx.data[:request][:query] = marshalled
-  ctx.data[:query]           = marshalled
-  app(ctx)
+    raw_query = ctx.data[:request][:query]
+    marshalled = strtodict(raw_query, "&")
+    ctx.data[:request][:query] = marshalled
+    ctx.data[:query]           = marshalled
+    app(ctx)
 end
 
 function mime!(ctx, value::AbstractString)
