@@ -29,6 +29,15 @@ function get_sessionid(ctx)
 end
 
 
+"""
+looks into the context and checks if there is an alread existing session id.
+If there is one, leave it as so.
+If there is not one, generate a new session id key
+
+PRECONDITIONS:
+    - the cookie middleware must be in place
+    - PIVOTSESSIONID must be in the cookies
+"""
 function gen_sessionid(fn, ctx)
     if fn(getin_cookie(ctx, "PIVOTSESSIONID"))
         getin_cookie(ctx, "PIVOTSESSIONID")

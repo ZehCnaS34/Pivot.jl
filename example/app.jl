@@ -1,5 +1,5 @@
 using Pivot
-import Pivot: Static, Filter, Security, Logger
+import Pivot: Static, Filter, Security, Logger, Rendering
 import Security: setin_session!, getin_session, setin_cookie!, getin_cookie
 
 
@@ -11,8 +11,9 @@ app = Engine()
 # middleware -------------------------------------------------------------------
 use!(app,
      Logger.simple,
-     Static.template(appdir),
-     Static.public(appdir),
+     Rendering.template(appdir),
+     Static.public(appdir;
+                   ignore=[]),
      Static.favicon,
      Filter.cookie_todict,
      Filter.body_todict,

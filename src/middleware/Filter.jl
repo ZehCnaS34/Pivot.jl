@@ -20,6 +20,9 @@ function strtodict(str, delim)
 end
 
 
+"""
+# parse_multipart
+"""
 function parse_multipart(raw, boundary)
     println(raw)
     raw = convert(ASCIIString, raw)
@@ -47,19 +50,16 @@ function body_todict(app, ctx)
     end
 
     if :type in keys(ctx.data[:contenttype])
-        if ctx.data[:contenttype][:type] != "multipart"
-            raw_data = convert(ASCIIString, ctx.data[:request][:data])
-            data = strtodict(raw_data, "&")
-            ctx.data[:body] = data
-            return app(ctx)
-        else # TODO: find a better way to parse multipart
-            boundary = ctx.data[:contenttype][:parameters]["boundary"]
-            println(boundary)
-            raw_data = convert(ASCIIString, ctx.data[:request][:data])
-            data = parse_multipart(raw_data, boundary)
-            ctx.data[:body] = data
-            return app(ctx)
+        raw_data = convert(ASCIIString, ctx.data[:request][:data])
+
+        ctx.data[:body] = if ctx.data[:contenttype][:type] != "multipart"
+            strtodict(raw_data, "&")
+        else
+            parse_multipart(raw_data,
+                            ctx.data[:contenttype][:parameters]["boundary"])
         end
+
+        return app(ctx)
     end
 
     raw_data = convert(ASCIIString, ctx.data[:request][:data])
@@ -69,6 +69,7 @@ function body_todict(app, ctx)
 end
 
 
+# hacky
 function contenttype_todict(app, ctx)
     if !in("Content-Type", ctx.data[:request][:headers] |> keys)
         ctx.data[:contenttype] = Dict()
@@ -77,7 +78,11 @@ function contenttype_todict(app, ctx)
 
     ct = Dict()
 
+
     raw_data = convert(ASCIIString, ctx.data[:request][:headers]["Content-Type"])
+
+    println(raw_data)
+
     parts = split(raw_data, ";")
     ct[:parameters] = length(parts) > 1 ?
         strtodict(parts[2], ";") :
