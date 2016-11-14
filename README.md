@@ -1,4 +1,5 @@
 # Pivot
+![img](https://travis-ci.org/ZehCnaS34/Pivot.jl.svg?branch=master)
 
 ## TODO List
 
