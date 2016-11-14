@@ -9,3 +9,6 @@ using Base.Test
 @test PATCH == 16
 
 @test GET + POST == GET | POST == 5
+
+@testset "Endpoint" begin
+end
